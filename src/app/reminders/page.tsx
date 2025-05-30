@@ -23,7 +23,7 @@ import {
   FilePenLine,
   Trash2,
   ScanLine,
-  PillIcon
+  PillIcon as Pill // Renamed to avoid conflict if Pill from lucide-react is directly used
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -36,7 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card"; // Keep for empty state
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function RemindersPage() {
   const [reminders, setReminders] = useState<MedicationReminder[]>([]);
@@ -59,14 +59,14 @@ export default function RemindersPage() {
   }, [reminders]);
 
   const handleAddReminder = (newReminder: MedicationReminder) => {
-    setReminders((prev) => [newReminder, ...prev].sort((a,b) => (b.id > a.id ? 1 : -1))); // Sort by most recent
+    setReminders((prev) => [newReminder, ...prev].sort((a,b) => (new Date(b.startDate || 0).getTime()) - (new Date(a.startDate || 0).getTime()))); // Sort by most recent or start date
     toast({ title: "Reminder Added", description: `${newReminder.name} has been added to your reminders.` });
     setShowAddManualForm(false);
     setShowUploadForm(false);
   };
 
   const handleGeneratedReminders = (generatedReminders: MedicationReminder[]) => {
-    setReminders((prev) => [...generatedReminders, ...prev].sort((a,b) => (b.id > a.id ? 1 : -1)));
+    setReminders((prev) => [...generatedReminders, ...prev].sort((a,b) => (new Date(b.startDate || 0).getTime()) - (new Date(a.startDate || 0).getTime())));
     toast({ title: "Reminders Generated", description: `${generatedReminders.length} reminder(s) added from prescription.`})
     setShowUploadForm(false);
     setShowAddManualForm(false);
@@ -79,11 +79,21 @@ export default function RemindersPage() {
   };
 
   const handleEditReminder = (id: string) => {
-    // For now, just a placeholder. In a real app, this would open an edit form.
-    // You could set state here to show an edit form populated with the reminder's data.
     const reminderToEdit = reminders.find(r => r.id === id);
-    toast({ title: "Edit Action", description: `Editing reminder for ${reminderToEdit?.name}. (Functionality not fully implemented)` });
+    // Here you would typically open the AddReminderForm pre-filled with reminderToEdit data
+    // For now, let's just log and show the form.
+    if (reminderToEdit && !reminderToEdit.isGenerated) { // Simple check: only allow editing manually added ones for now
+        // setShowAddManualForm(true); // This would need form pre-filling logic
+        toast({ title: "Edit Action", description: `Editing reminder for ${reminderToEdit?.name}. (Pre-filling form not implemented)` });
+    } else {
+        toast({ title: "Edit Action", description: `Editing AI generated reminders is not fully supported yet.` });
+    }
   };
+  
+  const handleCancelAddForm = () => {
+    setShowAddManualForm(false);
+    setShowUploadForm(false);
+  }
 
   const getStatusBadge = (index: number) : JSX.Element => {
     const statuses = [
@@ -94,9 +104,13 @@ export default function RemindersPage() {
     return statuses[index % statuses.length];
   }
 
-  const getNextReminderTime = (index: number): string => {
+  const getNextReminderTime = (reminder: MedicationReminder): string => {
+    // Placeholder: In a real app, this would calculate based on reminder.specificTimes, reminder.startDate, etc.
+    if (reminder.specificTimes && reminder.specificTimes.length > 0) {
+        return `Today, ${reminder.specificTimes[0]}`;
+    }
     const times = ["Today, 4:00 PM", "Today, 8:00 AM", "Tomorrow, 9:00 AM", "Today, 6:00 PM"];
-    return times[index % times.length];
+    return times[reminders.indexOf(reminder) % times.length];
   }
 
 
@@ -113,10 +127,10 @@ export default function RemindersPage() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button onClick={() => { setShowUploadForm(true); setShowAddManualForm(false); }} variant="outline">
+          <Button onClick={() => { setShowUploadForm(true); setShowAddManualForm(false); }} variant="outline"  disabled={showAddManualForm || showUploadForm}>
             <ScanLine className="mr-2 h-4 w-4" /> Scan Prescription
           </Button>
-          <Button onClick={() => { setShowAddManualForm(true); setShowUploadForm(false); }} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button onClick={() => { setShowAddManualForm(true); setShowUploadForm(false); }} className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={showAddManualForm || showUploadForm}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Reminder
           </Button>
         </div>
@@ -129,7 +143,7 @@ export default function RemindersPage() {
           id="add-manual"
           className="animate-in fade-in-50 slide-in-from-top-5 duration-300"
         >
-          <AddReminderForm onAddReminder={handleAddReminder} />
+          <AddReminderForm onAddReminder={handleAddReminder} onCancel={handleCancelAddForm} />
         </div>
       )}
 
@@ -148,10 +162,10 @@ export default function RemindersPage() {
 
       <div>
         <h2 className="text-2xl font-semibold mb-6">All Reminders</h2>
-        {reminders.length === 0 ? (
+        {reminders.length === 0 && !showAddManualForm && !showUploadForm ? (
            <Card className="text-center py-10 shadow-sm">
             <CardContent className="flex flex-col items-center justify-center">
-              <PillIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Pill className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-lg">No reminders set up yet.</p>
               <p className="text-sm text-muted-foreground">
                 Add reminders manually or scan a prescription to get started.
@@ -159,6 +173,7 @@ export default function RemindersPage() {
             </CardContent>
           </Card>
         ) : (
+          reminders.length > 0 && !showAddManualForm && !showUploadForm && (
           <Card className="shadow-sm">
             <Table>
               <TableHeader>
@@ -176,9 +191,9 @@ export default function RemindersPage() {
                 {reminders.map((reminder, index) => (
                   <TableRow key={reminder.id}>
                     <TableCell className="font-medium">{reminder.name}</TableCell>
-                    <TableCell>{reminder.dosage}</TableCell>
+                    <TableCell>{reminder.dosage} ({reminder.dosageForm || 'N/A'})</TableCell>
                     <TableCell>{reminder.timings}</TableCell>
-                    <TableCell>{getNextReminderTime(index)}</TableCell>
+                    <TableCell>{getNextReminderTime(reminder)}</TableCell>
                     <TableCell>
                       {reminder.isGenerated ? (
                         <span className="flex items-center gap-1">
@@ -204,6 +219,7 @@ export default function RemindersPage() {
               </TableBody>
             </Table>
           </Card>
+          )
         )}
       </div>
 
