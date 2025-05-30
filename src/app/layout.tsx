@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Sophia Carter - Health Dashboard',
+  title: 'Kishan - Health Dashboard',
   description: 'Your personal health dashboard.',
 };
 

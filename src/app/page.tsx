@@ -27,7 +27,7 @@ export default function HomePage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Welcome back, Sophia</h1>
+        <h1 className="text-3xl font-bold text-foreground">Welcome back, Kishan</h1>
         <p className="text-muted-foreground mt-1">Your personal assistant for managing health records, medication reminders, and tracking your health journey effectively.</p>
       </div>
 

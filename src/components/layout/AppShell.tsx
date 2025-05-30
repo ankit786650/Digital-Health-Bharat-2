@@ -49,10 +49,10 @@ export function AppShell({ children }: AppShellProps) {
         {/* User Info */}
         <div className="flex items-center gap-3 mb-8 p-2">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="https://placehold.co/40x40.png" alt="Sophia Carter" data-ai-hint="woman face" />
-            <AvatarFallback>SC</AvatarFallback>
+            <AvatarImage src="https://placehold.co/40x40.png" alt="Kishan" data-ai-hint="man face" />
+            <AvatarFallback>K</AvatarFallback>
           </Avatar>
-          <span className="font-semibold text-lg text-foreground">Sophia Carter</span>
+          <span className="font-semibold text-lg text-foreground">Kishan</span>
         </div>
 
         {/* Navigation */}
