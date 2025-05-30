@@ -7,7 +7,7 @@ import { DocumentCard } from "@/components/documents/DocumentCard";
 import type { MedicalDocument } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FolderArchive, PlusCircle, FileUp } from "lucide-react";
+import { FolderArchive, Plus, FileUp } from "lucide-react"; // Changed PlusCircle to Plus
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -30,16 +30,12 @@ export default function DocumentsPage() {
   useEffect(() => {
     const storedDocs = localStorage.getItem("mediminder_documents");
     if (storedDocs) {
-      // Files cannot be directly stored in localStorage. This setup is for metadata.
-      // For a real app, file handling would need server-side storage.
-      // Here, we are just restoring metadata. The actual File object will be lost on refresh.
       const parsedDocs = JSON.parse(storedDocs).map((doc: MedicalDocument) => ({...doc, file: null, filePreview: doc.filePreview || (doc.file && doc.file.type.startsWith("image/") ? "preview-lost-on-reload" : null)}));
       setDocuments(parsedDocs);
     }
   }, []);
 
   useEffect(() => {
-    // We stringify docs without the 'file' object for localStorage
     const docsToStore = documents.map(({ file, ...rest }) => rest);
     localStorage.setItem("mediminder_documents", JSON.stringify(docsToStore));
   }, [documents]);
@@ -57,14 +53,14 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2"><FolderArchive className="text-primary"/>Medical Documents</h1>
-          <p className="text-muted-foreground">Organize and access your lab reports, prescriptions, and more.</p>
+          <h1 className="text-3xl font-bold flex items-center gap-2"><FolderArchive className="text-primary h-8 w-8"/>Medical Documents</h1>
+          <p className="text-muted-foreground mt-1">Organize and access your lab reports, prescriptions, and more.</p>
         </div>
         <Button onClick={() => setShowUploadForm(prev => !prev)} variant={showUploadForm ? "outline" : "default"}>
-          <PlusCircle className="mr-2 h-4 w-4" /> {showUploadForm ? "Cancel" : "Upload Document"}
+          <Plus className="mr-2 h-4 w-4" /> {showUploadForm ? "Cancel" : "+ Upload Document"}
         </Button>
       </div>
 
@@ -76,24 +72,26 @@ export default function DocumentsPage() {
         </div>
       )}
       
-      <Separator />
+      <Separator className={showUploadForm ? "mt-8" : ""}/>
 
       <div>
         <h2 className="text-2xl font-semibold mb-6">Your Uploaded Documents</h2>
-        {documents.length === 0 ? (
-          <Card className="text-center py-10">
-            <CardContent>
+        {documents.length === 0 && !showUploadForm ? (
+          <Card className="text-center py-10 shadow-sm">
+            <CardContent className="flex flex-col items-center justify-center">
                 <FileUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No documents uploaded yet.</p>
-                <p className="text-sm text-muted-foreground">Click "Upload Document" to add your medical files.</p>
+                <p className="text-muted-foreground text-lg">No documents uploaded yet.</p>
+                <p className="text-sm text-muted-foreground">Click "+ Upload Document" to add your medical files.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {documents.map((doc) => (
-              <DocumentCard key={doc.id} document={doc} onDelete={() => setDocumentToDelete(doc.id)} />
-            ))}
-          </div>
+          documents.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {documents.map((doc) => (
+                <DocumentCard key={doc.id} document={doc} onDelete={() => setDocumentToDelete(doc.id)} />
+              ))}
+            </div>
+          )
         )}
       </div>
 
