@@ -8,33 +8,40 @@ body {
 
 @layer base {
   :root {
-    /* New HealthHub Theme (Slate & Blue from Settings HTML) */
+    /* HealthHub Theme (Derived from Document Page HTML) */
     --background: 220 14.3% 95.9%; /* slate-100 hsl(220, 14.3%, 95.9%) */
-    --foreground: 220 26% 20%;  /* slate-800 hsl(220, 26%, 20%) approx */
+    --foreground: 210 40% 98%; /* slate-50 (using a very light gray for main text on slate-100, for contrast with cards) */
+    
+    /* Specific text colors from HTML */
+    --text-slate-900: 222 47.4% 11.2%;
+    --text-slate-800: 220 26% 20%; 
+    --text-slate-700: 220 13% 46.1%;
+    --text-slate-600: 215.4 16.3% 46.9%;
+    --text-slate-500: 215 20.2% 65.1%;
 
     --card: 0 0% 100%; /* White */
-    --card-foreground: 220 26% 20%; /* slate-800 */
+    --card-foreground: var(--text-slate-900); /* slate-900 */
 
     --popover: 0 0% 100%; /* White */
-    --popover-foreground: 220 26% 20%; /* slate-800 */
+    --popover-foreground: var(--text-slate-900);
 
-    --primary: 205 90% 50%; /* #2a9fed hsl(205, 90%, 50%) */
+    --primary: 205 90% 50%; /* #2a9fed */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 220 13% 91%; /* slate-200 hsl(220, 13%, 91%) */
-    --secondary-foreground: 220 26% 20%; /* slate-800 for text on secondary */
+    --secondary: 220 13% 91%; /* slate-200 */
+    --secondary-foreground: var(--text-slate-900);
 
-    --muted: 220 13% 91%;    /* slate-200 hsl(220, 13%, 91%) */
-    --muted-foreground: 215 20.2% 65.1%; /* slate-500 hsl(215, 20.2%, 65.1%) for text */
+    --muted: 220 13% 91%;    /* slate-200 */
+    --muted-foreground: var(--text-slate-500); /* slate-500 for muted text */
 
-    --accent: 205 90% 94%; /* sky-100 hsl(205, 90%, 94%) approx for active nav */
-    --accent-foreground: 205 70% 35%; /* sky-700 hsl(205, 70%, 35%) approx for active nav text */
+    --accent: 205 90% 94%; /* sky-100 like bg-sky-50 */
+    --accent-foreground: 205 70% 35%; /* A darker sky blue for text on accent */
 
     --destructive: 0 75% 55%; /* A slightly softer red: #DB4444 */
-    --destructive-foreground: 0 0% 98%; /* Off-white */
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 83.9%;     /* slate-300 hsl(220, 13%, 83.9%) for borders */
-    --input: 220 13% 83.9%;     /* slate-300 hsl(220, 13%, 83.9%) for input borders */
+    --border: 220 13% 83.9%;     /* slate-300 or slate-200 for borders */
+    --input: 220 13% 83.9%;     /* slate-300 */
     --ring: 205 90% 50%;   /* #2a9fed for focus rings */
 
     --radius: 0.5rem; /* Corresponds to rounded-lg in HTML */
@@ -47,32 +54,40 @@ body {
   }
 
   .dark {
-    /* Keeping dark theme vars, but the design is light */
-    --background: 220 10% 10%;
-    --foreground: 220 20% 90%;
-    --card: 220 10% 15%;
-    --card-foreground: 220 20% 90%;
-    --popover: 220 10% 8%;
-    --popover-foreground: 220 20% 90%;
-    --primary: 205 90% 55%;
-    --primary-foreground: 220 10% 10%;
-    --secondary: 220 10% 20%;
-    --secondary-foreground: 220 20% 90%;
-    --muted: 220 10% 18%;
-    --muted-foreground: 220 15% 65%;
-    --accent: 205 90% 25%; /* Adjusted for dark mode active nav */
-    --accent-foreground: 205 80% 80%; /* Adjusted for dark mode active nav text */
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 25%;
-    --input: 220 10% 25%;
-    --ring: 205 90% 55%;
+    /* Dark theme placeholder - not fully designed from provided HTML */
+    --background: 222 47.4% 11.2%; /* slate-900 */
+    --foreground: 220 14.3% 95.9%; /* slate-100 */
 
-    --chart-1: 205 90% 55%;
-    --chart-2: 25 70% 65%;
-    --chart-3: 170 60% 50%;
-    --chart-4: 50 65% 55%;
-    --chart-5: 300 50% 65%;
+    --text-slate-900: 220 14.3% 95.9%;
+    --text-slate-800: 220 13% 91%;
+    --text-slate-700: 215.4 16.3% 76.9%;
+    --text-slate-600: 215 20.2% 65.1%;
+    --text-slate-500: 220 13% 46.1%;
+
+    --card: 220 26% 15%; /* Darker card */
+    --card-foreground: var(--text-slate-50);
+
+    --popover: 220 26% 10%;
+    --popover-foreground: var(--text-slate-50);
+
+    --primary: 205 90% 55%;
+    --primary-foreground: 222 47.4% 11.2%;
+
+    --secondary: 220 13% 21%;
+    --secondary-foreground: var(--text-slate-50);
+
+    --muted: 220 13% 21%;
+    --muted-foreground: var(--text-slate-500);
+
+    --accent: 205 90% 20%; /* Darker sky */
+    --accent-foreground: 205 80% 85%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 25%;
+    --input: 220 13% 25%;
+    --ring: 205 90% 55%;
   }
 }
 
@@ -81,28 +96,14 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-slate-700; /* Default body text color from HTML */
+  }
+  h1,h2,h3,h4,h5,h6 {
+    @apply text-slate-900; /* Default heading color */
   }
 }
 
-/* Custom styles for nav items to match HTML */
-.nav-item {
-  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 transition-colors duration-150;
-}
-.nav-item:hover {
-  @apply bg-muted/50; /* Using muted/50 for hover, similar to slate-50 */
-}
-.nav-item.active {
-  @apply bg-accent text-accent-foreground font-semibold;
-}
-.nav-item.active svg {
-  @apply text-accent-foreground;
-}
-.nav-item svg {
-  @apply text-muted-foreground; /* default icon color slate-500 */
-}
-
-/* Ensure form inputs match the new design */
+/* Custom styles for nav items and inputs if needed */
 .form-input {
   @apply block w-full rounded-md border-input bg-card shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50;
 }
