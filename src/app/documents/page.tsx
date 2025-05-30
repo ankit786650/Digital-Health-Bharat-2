@@ -7,7 +7,7 @@ import { DocumentCard } from "@/components/documents/DocumentCard";
 import type { MedicalDocument } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FolderArchive, Plus, FileUp } from "lucide-react"; // Changed PlusCircle to Plus
+import { FolderArchive, Plus, FileUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,

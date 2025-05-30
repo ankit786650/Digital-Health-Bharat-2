@@ -28,12 +28,13 @@ import { UploadCloud, FileSpreadsheet } from "lucide-react";
 import Image from "next/image";
 
 const documentFormSchema = z.object({
-  name: z.string().min(2, "Document name must be at least 2 characters."),
+  name: z.string().min(2, "Document name must be at least 2 characters.").max(100, "Document name is too long."),
   type: z.enum(["prescription", "lab_report", "other"], {
     required_error: "You need to select a document type.",
   }),
   file: z.instanceof(File, { message: "Please upload a file." })
-    .refine(file => file.size < 5 * 1024 * 1024, "File size should be less than 5MB."), // Example: 5MB limit
+    .refine(file => file.size > 0, "File cannot be empty.")
+    .refine(file => file.size < 5 * 1024 * 1024, "File size should be less than 5MB."),
 });
 
 type DocumentFormValues = z.infer<typeof documentFormSchema>;
@@ -48,13 +49,15 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
     resolver: zodResolver(documentFormSchema),
     defaultValues: {
       name: "",
+      // type: undefined, // Let placeholder show
+      // file: undefined, // Let placeholder show
     },
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      form.setValue("file", file);
+      form.setValue("file", file, { shouldValidate: true });
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -62,35 +65,37 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
         };
         reader.readAsDataURL(file);
       } else {
-        setFilePreview(null); // Clear preview for non-image files
+        setFilePreview(null); 
       }
     } else {
-        // @ts-ignore
-        form.setValue("file", undefined); // Or null, depending on how you handle it
-        setFilePreview(null);
+      form.setValue("file", undefined as any, { shouldValidate: true }); 
+      setFilePreview(null);
     }
   };
 
   function onSubmit(data: DocumentFormValues) {
+    // file is already validated by schema to be a File object
     const newDocument: MedicalDocument = {
       id: `doc-${Date.now()}`,
       name: data.name,
       type: data.type,
-      file: data.file, // The actual file object
-      filePreview: filePreview, // The data URL for preview
+      file: data.file, 
+      filePreview: data.file.type.startsWith("image/") ? filePreview : null,
       uploadedAt: new Date().toISOString(),
     };
     onAddDocument(newDocument);
     form.reset();
     setFilePreview(null);
-    // @ts-ignore
-    document.getElementById('document-file-input')?.value = null; // Reset file input
+    const fileInput = document.getElementById('document-file-input') as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.value = ''; 
+    }
   }
 
   return (
     <Card className="w-full shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><FileSpreadsheet className="text-primary" />Upload New Document</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl"><FileSpreadsheet className="text-primary h-5 w-5" />Upload New Document</CardTitle>
         <CardDescription>Add lab reports, prescriptions, or other medical documents.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -134,7 +139,7 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
             <FormField
               control={form.control}
               name="file"
-              render={({ field }) => ( // field is not directly used for input type file to allow custom handler
+              render={() => ( 
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
@@ -144,7 +149,7 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
                 </FormItem>
               )}
             />
-             {filePreview && (
+             {filePreview && form.getValues("file")?.type.startsWith("image/") && (
               <div className="mt-4 border rounded-md p-2">
                 <p className="text-sm font-medium mb-2 text-foreground">Preview:</p>
                 <Image

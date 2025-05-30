@@ -17,14 +17,14 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
   const formattedDate = document.uploadedAt ? format(new Date(document.uploadedAt), "MMMM d, yyyy, p") : "N/A";
 
   const getFileIcon = () => {
-    if (document.filePreview && document.type !== 'other') { // Assuming preview means image-like
+    if (document.filePreview && document.type !== 'other' && document.file?.type.startsWith("image/")) { 
         return <FileImage className="text-primary h-6 w-6" />;
     }
     switch (document.type) {
       case "prescription":
         return <FileText className="text-primary h-6 w-6" />;
       case "lab_report":
-        return <FileQuestion className="text-primary h-6 w-6" />; // Using FileQuestion for lab reports
+        return <FileQuestion className="text-primary h-6 w-6" />; 
       default:
         return <FileText className="text-primary h-6 w-6" />;
     }
@@ -57,7 +57,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
     <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl flex items-center gap-2 truncate">
+          <CardTitle className="text-lg flex items-center gap-2 truncate"> {/* text-xl to text-lg for slightly smaller title */}
             {getFileIcon()}
             <span className="truncate" title={document.name}>{document.name}</span>
           </CardTitle>
@@ -67,7 +67,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-4 flex-grow">
-        {document.filePreview ? (
+        {document.filePreview && document.file?.type.startsWith("image/") ? (
           <div className="my-2 rounded-md overflow-hidden border max-h-40 flex justify-center items-center bg-muted/30">
             <Image
               src={document.filePreview}
@@ -79,7 +79,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
             />
           </div>
         ) : (
-          <div className="my-2 p-4 text-center text-muted-foreground bg-muted/30 rounded-md">
+          <div className="my-2 p-4 text-center text-muted-foreground bg-muted/30 rounded-md h-40 flex flex-col justify-center items-center"> {/* Ensure consistent height */}
             <p className="text-sm">No preview available for this file type.</p>
             {document.file && <p className="text-xs mt-1">({(document.file.size / 1024).toFixed(2)} KB)</p>}
           </div>
