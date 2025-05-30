@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import type { MedicationReminder } from "@/lib/types";
 import { processPrescriptionImage, ProcessPrescriptionResult } from "@/lib/actions";
-import { UploadCloud, Loader2, X } from "lucide-react";
+import { UploadCloud, Loader2, X, ScanLine } from "lucide-react"; // Added ScanLine
 import Image from "next/image";
 
 interface PrescriptionUploadFormProps {
@@ -145,7 +145,7 @@ export function PrescriptionUploadForm({ onRemindersGenerated, onCancel }: Presc
                     {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                    <ScanLine className="mr-2 h-4 w-4" /> // Changed from UploadCloud
+                    <ScanLine className="mr-2 h-4 w-4" /> 
                     )}
                     {isLoading ? "Processing..." : "Extract Details"}
                 </Button>
@@ -155,5 +155,3 @@ export function PrescriptionUploadForm({ onRemindersGenerated, onCancel }: Presc
     </Card>
   );
 }
-
-    
