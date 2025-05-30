@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -24,10 +24,12 @@ const navItems: NavItem[] = [
   { href: "/messages", label: "Messages" },
   { href: "/documents", label: "Documents" },
   { href: "/reports", label: "Reports" },
+  // { href: "/profile", label: "Profile"}, // Removed to match server render and undo operation
 ];
 
 const AppLogo = () => (
   <div className="size-6 text-primary">
+    {/* Blue logo */}
     <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
       <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
     </svg>
@@ -74,7 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <Input
                 suppressHydrationWarning
-                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-background focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
+                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-card focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
                 placeholder="Search"
               />
             </div>
@@ -86,10 +88,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className="text-slate-500 hover:text-primary relative flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent">
             <Bell className="h-6 w-6" />
           </Button>
-          <Avatar className="h-10 w-10 border-2 border-card shadow-sm">
-            <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="user avatar" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
+          <Link href="/profile"> {/* Added link to profile page for avatar */}
+            <Avatar className="h-10 w-10 border-2 border-card shadow-sm cursor-pointer hover:opacity-80 transition-opacity">
+              <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="user avatar" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </Link>
           <Button variant="ghost" size="icon" className="md:hidden text-slate-500 hover:text-primary" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <Menu className="h-6 w-6" />
           </Button>
@@ -100,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {mobileMenuOpen && (
         <nav className="md:hidden bg-card border-b border-border p-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/");
+            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.label}
@@ -122,7 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <Input
                 suppressHydrationWarning
-                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-background focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
+                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-card focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
                 placeholder="Search"
               />
             </div>
