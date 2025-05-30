@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { AlertTriangle, Camera, CalendarIcon as CalendarDateIcon, Save } from "lucide-react";
+import { AlertTriangle, Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +73,8 @@ export default function ProfilePage() {
       bloodType: "O+",
       chronicConditions: "Migraine, Seasonal Allergies",
       avatarUrl: "https://placehold.co/128x128.png",
+      emergencyContact1Phone: "(555) 987-6543",
+      emergencyContact2Phone: "(555) 111-2222",
     },
   });
 
@@ -217,7 +219,9 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
                 <CardTitle className="text-lg">Emergency Contacts</CardTitle>
-                <span className="ml-auto text-sm">Dial 108 (National Emergency)</span>
+                <a href="tel:108" className="ml-auto text-sm hover:underline focus:outline-none focus:ring-1 focus:ring-destructive-foreground rounded px-1">
+                  Dial 108 (National Emergency)
+                </a>
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
@@ -231,7 +235,17 @@ export default function ProfilePage() {
               <FormField control={form.control} name="emergencyContact1Phone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Emergency Contact 1: Phone</FormLabel>
-                  <FormControl><Input type="tel" placeholder="e.g., (555) 987-6543" {...field} /></FormControl>
+                  <div className="flex items-center gap-2">
+                    <FormControl className="flex-grow"><Input type="tel" placeholder="e.g., (555) 987-6543" {...field} /></FormControl>
+                    {field.value && (
+                      <Button asChild variant="outline" size="icon" className="border-border hover:bg-muted/80 shrink-0">
+                        <a href={`tel:${field.value.replace(/\D/g, '')}`}>
+                          <Phone className="h-4 w-4 text-foreground" />
+                          <span className="sr-only">Call {field.value}</span>
+                        </a>
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -245,7 +259,17 @@ export default function ProfilePage() {
               <FormField control={form.control} name="emergencyContact2Phone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Emergency Contact 2: Phone</FormLabel>
-                  <FormControl><Input type="tel" placeholder="e.g., (555) 111-2222" {...field} /></FormControl>
+                   <div className="flex items-center gap-2">
+                    <FormControl className="flex-grow"><Input type="tel" placeholder="e.g., (555) 111-2222" {...field} /></FormControl>
+                    {field.value && (
+                       <Button asChild variant="outline" size="icon" className="border-border hover:bg-muted/80 shrink-0">
+                        <a href={`tel:${field.value.replace(/\D/g, '')}`}>
+                          <Phone className="h-4 w-4 text-foreground" />
+                          <span className="sr-only">Call {field.value}</span>
+                        </a>
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -336,3 +360,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
