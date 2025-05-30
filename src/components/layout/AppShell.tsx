@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Search, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Toaster } from "@/components/ui/toaster"; // Added import
+import { Toaster } from "@/components/ui/toaster";
 
 interface NavItem {
   href: string;
@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
   { href: "/messages", label: "Messages" },
   { href: "/documents", label: "Documents" },
   { href: "/reports", label: "Reports" },
+  { href: "/profile", label: "Profile" }, // Added Profile link
 ];
 
 const AppLogo = () => (
