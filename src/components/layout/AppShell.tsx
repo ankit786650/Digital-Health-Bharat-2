@@ -3,112 +3,73 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarTrigger,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset,
-  SidebarFooter,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, Settings, LogOut, LayoutGrid, Pill, CalendarDays, FileText, MessageSquare } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
-import {
-  LayoutGrid,
-  Pill,
-  CalendarDays,
-  FileText,
-  MessageSquare,
-  Settings,
-  LogOut,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
-  { href: "/reminders", label: "Medications", icon: Pill }, // Changed from /reminders to /medications for clarity, icon Pill
-  { href: "/visits", label: "Appointments", icon: CalendarDays }, // Changed from /visits, icon CalendarDays
-  { href: "/documents", label: "Medical Records", icon: FileText }, // Changed from /documents, icon FileText
-  { href: "/messages", label: "Messages", icon: MessageSquare, badge: 3 },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/reminders", label: "Medications", icon: Pill },
+  { href: "/visits", label: "Appointments", icon: CalendarDays },
+  { href: "/messages", label: "Messages", icon: MessageSquare, badge: 3 }, // Example badge
+  { href: "/documents", label: "Documents", icon: FileText },
 ];
+
+const AppLogo = () => (
+  <div className="size-6 text-primary">
+    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+    </svg>
+  </div>
+);
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r bg-sidebar text-sidebar-foreground">
-          <SidebarHeader className="p-4 flex flex-col items-start gap-3">
-            <div className="flex items-center gap-3 w-full">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="Sophia Carter" data-ai-hint="female avatar" />
-                <AvatarFallback>SC</AvatarFallback>
-              </Avatar>
-              <div className="group-data-[collapsible=icon]:hidden">
-                <p className="text-sm font-semibold text-sidebar-foreground">Sophia Carter</p>
-                <p className="text-xs text-muted-foreground">Patient ID: P123456</p>
-              </div>
-            </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="flex-1 overflow-y-auto p-2">
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} passHref legacyBehavior>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href}
-                      tooltip={{ children: item.label, className: "bg-card text-card-foreground border-border" }}
-                      className="justify-start text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className="group-data-[collapsible=icon]:hidden">
-                        {item.label}
-                      </span>
-                      {item.badge && (
-                        <span className="ml-auto group-data-[collapsible=icon]:hidden bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {item.badge}
-                        </span>
-                      )}
-                    </SidebarMenuButton>
-                  </Link>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          
-          <SidebarSeparator className="group-data-[collapsible=icon]:hidden bg-sidebar-border" />
-          
-          <SidebarFooter className="p-2">
-             <Link href="/logout" passHref legacyBehavior>
-                <SidebarMenuButton 
-                    variant="ghost" 
-                    className="justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full"
-                    tooltip={{ children: "Log Out", className: "bg-card text-card-foreground border-border"}}
-                >
-                    <LogOut className="h-5 w-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">Log Out</span>
-                </SidebarMenuButton>
-            </Link>
-          </SidebarFooter>
-        </Sidebar>
-
-        <SidebarInset className="flex-1 flex flex-col">
-          {/* Header removed as per new design - page titles are part of page content now */}
-          <main className="flex-1 overflow-y-auto">
-            {children}
-          </main>
-        </SidebarInset>
-      </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-border px-10 py-3 shadow-sm bg-card">
+        <div className="flex items-center gap-3 text-foreground">
+          <AppLogo />
+          <h2 className="text-xl font-semibold leading-tight tracking-tight">MediTrack</h2>
+        </div>
+        <div className="flex flex-1 justify-end gap-4">
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium leading-normal transition-colors duration-150 ${
+                  pathname === item.href
+                    ? "text-primary bg-secondary"
+                    : "text-muted-foreground hover:text-primary hover:bg-secondary"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-secondary">
+              <Bell className="h-5 w-5" />
+              <span className="sr-only">Notifications</span>
+            </Button>
+            {/* Add DropdownMenu for avatar later if needed */}
+            <Avatar className="h-10 w-10 border-2 border-border hover:border-primary transition-colors duration-150 cursor-pointer">
+              <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="user avatar" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      </header>
+      <main className="px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-8">
+        <div className="layout-content-container flex flex-col w-full max-w-5xl flex-1">
+          {children}
+        </div>
+      </main>
       <Toaster />
-    </SidebarProvider>
+      {/* Mobile navigation can be added here if needed, e.g. using a Sheet component */}
+    </div>
   );
 }

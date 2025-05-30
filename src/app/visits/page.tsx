@@ -5,89 +5,107 @@ import { useState, useEffect } from "react";
 import { AddVisitForm } from "@/components/visits/AddVisitForm";
 import type { Visit } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Stethoscope, Plus, BriefcaseMedical, ListOrdered } from "lucide-react";
+import { Plus, Stethoscope } from "lucide-react"; // Using Stethoscope for medical_services
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+
+const initialVisits: Visit[] = [
+    { id: "1", date: "2024-07-15", doctorName: "Dr. Emily Carter", specialization: "Psychiatry", notes: "Patient reported improved sleep patterns and reduced anxiety levels. Continue current medication regimen." },
+    { id: "2", date: "2024-06-20", doctorName: "Dr. Robert Harris", specialization: "General Practice", notes: "Blood pressure within normal range. Continue with current medication." },
+    { id: "3", date: "2024-05-10", doctorName: "Dr. Emily Carter", specialization: "Psychiatry", notes: "Patient reported mild headaches. Adjusted medication dosage. Follow up in 2 weeks." },
+    { id: "4", date: "2024-04-05", doctorName: "Dr. Robert Harris", specialization: "General Practice", notes: "Initial consultation. Prescribed medication for anxiety and sleep issues." },
+];
+
 
 export default function VisitsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  // Removed visitToDelete state as delete functionality is removed from this list view
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedVisits = localStorage.getItem("mediminder_visits");
+    const storedVisits = localStorage.getItem("meditrack_visits");
     if (storedVisits) {
       setVisits(JSON.parse(storedVisits).sort((a:Visit,b:Visit) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    } else {
+      // Initialize with default data if no local storage data
+      setVisits(initialVisits.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("mediminder_visits", JSON.stringify(visits));
+    localStorage.setItem("meditrack_visits", JSON.stringify(visits));
   }, [visits]);
 
-  const handleAddVisit = (newVisit: Visit) => {
-    setVisits((prev) => [newVisit, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    toast({ title: "Visit Logged", description: `Visit with ${newVisit.doctorName} on ${format(new Date(newVisit.date), "MMM d, yyyy")} has been recorded.` });
+  const handleAddVisit = (newVisit: Omit<Visit, 'id' | 'attachedDocuments'> & { attachedDocuments?: File[] }) => {
+    const visitWithId: Visit = {
+      ...newVisit,
+      id: `visit-${Date.now()}`,
+      attachedDocuments: newVisit.attachedDocuments || [],
+    };
+    setVisits((prev) => [visitWithId, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    toast({ title: "Visit Logged", description: `Visit with ${visitWithId.doctorName} on ${format(new Date(visitWithId.date), "MMM d, yyyy")} has been recorded.` });
     setShowAddForm(false);
   };
 
-  // Edit and Delete functions are removed from this page as the UI to trigger them is no longer present
-  // To re-add, a detail view or action menu per item would be needed.
-
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Stethoscope className="h-8 w-8 text-primary"/>Doctor Visits</h1>
-        <Button onClick={() => setShowAddForm(prev => !prev)} variant={showAddForm ? "outline" : "default"}>
-          <Plus className="mr-2 h-4 w-4" /> {showAddForm ? "Cancel" : "Add Visit"}
-        </Button>
+    <div className="flex flex-col w-full">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div className="flex-1 min-w-[300px]">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground">Doctor Visits</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            When you tap 'Add Visit,' a simple form pops up. You can fill in the date of your appointment, your doctor's name, and any notes about what happened during the visit. There's also a handy option to set a reminder for your next appointment, including the time and a short note to jog your memory. Plus, if you have any documents from a past visit with the same doctor, you can easily upload them here.
+          </p>
+        </div>
+        <div className="relative">
+          <Button 
+            onClick={() => setShowAddForm(prev => !prev)} 
+            className="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary text-primary-foreground text-sm font-semibold leading-normal shadow-sm hover:bg-primary/90 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="truncate">{showAddForm ? "Cancel" : "Add Visit"}</span>
+          </Button>
+        </div>
       </div>
 
-      {showAddForm && <Separator />}
-
       {showAddForm && (
-        <div className="animate-in fade-in-50 slide-in-from-top-5 duration-300">
-          <AddVisitForm onAddVisit={handleAddVisit} />
+        <div className="mb-6 animate-in fade-in-50 slide-in-from-top-5 duration-300">
+          <AddVisitForm onAddVisit={handleAddVisit} onCancel={() => setShowAddForm(false)} />
         </div>
       )}
       
-      <Separator className={showAddForm ? "" : "hidden"}/>
-
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Recent Visits</CardTitle>
+      <Card className="shadow-lg rounded-xl overflow-hidden bg-card">
+        <CardHeader className="px-6 py-4 border-b border-border">
+          <CardTitle className="text-xl font-semibold leading-tight tracking-tight text-card-foreground">Recent Visits</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="p-0 divide-y divide-border">
           {visits.length === 0 && !showAddForm ? (
-            <div className="text-center py-10 text-muted-foreground">
-              <ListOrdered className="h-12 w-12 mx-auto mb-4" />
+            <div className="text-center py-10 px-6 text-muted-foreground">
+              <Stethoscope className="h-12 w-12 mx-auto mb-4" />
               <p>No visits recorded yet.</p>
               <p className="text-sm">Click "+ Add Visit" to log your first appointment.</p>
             </div>
           ) : (
-            <div className="space-y-0">
-              {visits.map((visit) => (
-                <div key={visit.id} className="flex items-start gap-4 py-4 border-b last:border-b-0">
-                  <div className="bg-blue-100 text-primary p-3 rounded-full mt-1">
-                    <BriefcaseMedical className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground">
-                      {format(new Date(visit.date), "MMMM d, yyyy")}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">Clinical notes:</span> {visit.notes || "No notes provided."}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Dr. {visit.doctorName}
-                    </p>
-                  </div>
+            visits.map((visit) => (
+              <div key={visit.id} className="flex items-start gap-4 p-6 hover:bg-secondary transition-colors duration-150">
+                <div className="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-12 mt-1">
+                  <Stethoscope className="h-6 w-6" />
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-1 flex-col">
+                  <p className="text-base font-semibold leading-normal mb-1 text-foreground">
+                    {format(parseISO(visit.date), "MMMM d, yyyy")}
+                  </p>
+                  {visit.notes && (
+                    <p className="text-sm font-normal leading-relaxed mb-1 text-muted-foreground">
+                      Clinical notes: {visit.notes}
+                    </p>
+                  )}
+                  <p className="text-sm font-medium leading-normal text-muted-foreground/80">
+                    Dr. {visit.doctorName} - {visit.specialization || "N/A"}
+                  </p>
+                </div>
+              </div>
+            ))
           )}
         </CardContent>
       </Card>
