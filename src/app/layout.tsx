@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'MediTrack', // Updated App Name
+  title: 'Digital Health Bharat', // Updated App Name
   description: 'Your intelligent health companion for medication management and clinical documentation.',
 };
 

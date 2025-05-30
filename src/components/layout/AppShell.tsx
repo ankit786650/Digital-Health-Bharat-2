@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-border px-10 py-3 shadow-sm bg-card">
         <div className="flex items-center gap-3 text-foreground">
           <AppLogo />
-          <h2 className="text-xl font-semibold leading-tight tracking-tight">MediTrack</h2>
+          <h2 className="text-xl font-semibold leading-tight tracking-tight">Digital Health Bharat</h2>
         </div>
         <div className="flex flex-1 justify-end gap-4">
           <nav className="hidden md:flex items-center gap-1">
