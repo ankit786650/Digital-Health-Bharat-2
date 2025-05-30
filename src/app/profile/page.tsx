@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { AlertTriangle, Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
+import { Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -67,16 +67,16 @@ export default function ProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: "Kishan", // Updated name
+      firstName: "Kishan", 
       middleName: "",
-      lastName: "Davis", // Example last name
+      lastName: "Davis", 
       dateOfBirth: new Date("1990-07-22"),
-      gender: "male", // Example gender
+      gender: "male", 
       primaryPhone: "(555) 123-4567",
-      primaryEmail: "kishan.davis@example.com", // Example email
+      primaryEmail: "kishan.davis@example.com", 
       preferredLanguage: "English, Hindi",
-      heightCm: 170, // Example height
-      weightKg: 70,  // Example weight
+      heightCm: 170, 
+      weightKg: 70,  
       bloodType: "O+",
       chronicConditions: "Migraine, Seasonal Allergies",
       avatarUrl: "https://placehold.co/128x128.png",
@@ -230,14 +230,11 @@ export default function ProfilePage() {
 
           {/* Emergency Contacts */}
           <Card>
-            <CardHeader className="bg-destructive text-destructive-foreground rounded-t-lg p-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                <CardTitle className="text-lg">Emergency Contacts</CardTitle>
-                <a href="tel:108" className="ml-auto text-sm hover:underline focus:outline-none focus:ring-1 focus:ring-destructive-foreground rounded px-1">
-                  Dial 108 (National Emergency)
-                </a>
-              </div>
+            <CardHeader className="bg-destructive text-destructive-foreground rounded-t-lg p-3 flex justify-center items-center">
+              <a href="tel:108" className="flex items-center gap-2 text-sm font-medium hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-destructive-foreground rounded">
+                <Phone className="h-5 w-5" />
+                <span>Dial 108 (National Emergency)</span>
+              </a>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
               <FormField control={form.control} name="emergencyContact1Name" render={({ field }) => (
@@ -375,5 +372,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
