@@ -50,7 +50,7 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
     defaultValues: {
       name: "",
       // type: undefined, // Let placeholder show
-      // file: undefined, // Let placeholder show
+      // file: undefined, // Will be set by file input change
     },
   });
 
@@ -68,23 +68,27 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
         setFilePreview(null); 
       }
     } else {
-      form.setValue("file", undefined as any, { shouldValidate: true }); 
+      // form.setValue("file", undefined as any, { shouldValidate: true }); // This might cause issues if schema expects File
+      form.setValue("file", new File([], ""), { shouldValidate: true }); // Use an empty file to satisfy type, but validation will catch it
       setFilePreview(null);
     }
   };
 
   function onSubmit(data: DocumentFormValues) {
-    // file is already validated by schema to be a File object
+    if (!data.file || data.file.size === 0) {
+        form.setError("file", { type: "manual", message: "Please upload a valid file." });
+        return;
+    }
     const newDocument: MedicalDocument = {
       id: `doc-${Date.now()}`,
       name: data.name,
       type: data.type,
       file: data.file, 
-      filePreview: data.file.type.startsWith("image/") ? filePreview : null,
+      filePreview: data.file.type.startsWith("image/") ? filePreview : null, // Only set preview if it's an image AND filePreview is populated
       uploadedAt: new Date().toISOString(),
     };
     onAddDocument(newDocument);
-    form.reset();
+    form.reset({name: "", type: undefined, file: undefined}); // Reset with undefined for type and file
     setFilePreview(null);
     const fileInput = document.getElementById('document-file-input') as HTMLInputElement | null;
     if (fileInput) {
@@ -120,7 +124,7 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Document Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select document type" />
@@ -139,7 +143,7 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
             <FormField
               control={form.control}
               name="file"
-              render={() => ( 
+              render={() => ( // field is not directly used here to manage file input's uncontrolled nature
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
@@ -155,9 +159,9 @@ export function UploadDocumentForm({ onAddDocument }: UploadDocumentFormProps) {
                 <Image
                     src={filePreview}
                     alt="Document preview"
-                    width={200}
-                    height={150}
-                    className="rounded-md object-contain max-h-36 w-auto"
+                    width={200} // Intrinsic width for aspect ratio calculation
+                    height={150} // Intrinsic height for aspect ratio calculation
+                    className="rounded-md object-contain max-h-36 w-auto" // Style for display
                     data-ai-hint="document medical"
                 />
               </div>

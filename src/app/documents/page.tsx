@@ -36,7 +36,7 @@ export default function DocumentsPage() {
   }, []);
 
   useEffect(() => {
-    const docsToStore = documents.map(({ file, ...rest }) => rest);
+    const docsToStore = documents.map(({ file, ...rest }) => rest); // Don't store the File object itself
     localStorage.setItem("mediminder_documents", JSON.stringify(docsToStore));
   }, [documents]);
 
