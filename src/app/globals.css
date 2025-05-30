@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    /* NEW THEME based on provided HTML (Slate & Blue) */
+    /* HealthHub Theme (Slate & Blue from provided HTML) */
     --background: 220 20% 96.1%; /* slate-50 hsl(220, 20%, 96.1%) */
     --foreground: 220 39.3% 11%;  /* slate-900 hsl(220, 39.3%, 11%) */
 
@@ -18,7 +18,7 @@ body {
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 220 39.3% 11%; /* slate-900 */
 
-    --primary: 221 83.2% 53.3%; /* blue-600 hsl(221, 83.2%, 53.3%) */
+    --primary: 205 90% 50%; /* #2a9fed hsl(205, 90%, 50%) */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
     --secondary: 220 14.3% 95.9%; /* slate-100 hsl(220, 14.3%, 95.9%) */
@@ -26,43 +26,38 @@ body {
 
     --muted: 220 13% 91%;    /* slate-200 hsl(220, 13%, 91%) */
     --muted-foreground: 215 20.2% 65.1%; /* slate-500 hsl(215, 20.2%, 65.1%) for text */
-    /* For text-slate-600, hsl(215, 16.3%, 46.9%) can be used */
-    /* For text-slate-700, hsl(215, 25.3%, 26.7%) can be used */
 
-
-    --accent: 220 14.3% 95.9%; /* slate-100 (for hover backgrounds) */
-    --accent-foreground: 221 83.2% 53.3%; /* blue-600 (for text on accent hover) */
+    --accent: 205 90% 96.1%; /* sky-50 (for hover backgrounds like bg-sky-100 from html) hsl(205, 90%, 96.1%) */
+    --accent-foreground: 205 90% 45%; /* Similar to primary, but for text on accent hover */
 
     --destructive: 0 75% 55%; /* A slightly softer red: #DB4444 */
     --destructive-foreground: 0 0% 98%; /* Off-white */
 
-    --border: 214.3 31.8% 91.4%; /* slate-200 hsl(214.3, 31.8%, 91.4%) */
+    --border: 220 13% 83.9%;     /* slate-300 hsl(220, 13%, 83.9%) for borders */
     --input: 220 13% 83.9%;     /* slate-300 hsl(220, 13%, 83.9%) for input borders */
-    --ring: 221 83.2% 53.3%;   /* blue-600 for focus rings */
+    --ring: 205 90% 50%;   /* #2a9fed for focus rings */
 
-    --radius: 0.5rem;
+    --radius: 0.5rem; /* Corresponds to rounded-lg in HTML */
 
-    /* Chart colors can remain or be updated if specific chart designs are provided later */
-    --chart-1: 221 83.2% 53.3%; /* blue-600 */
-    --chart-2: 25 80% 60%; /* Coral/Orange */
-    --chart-3: 170 65% 40%; /* Teal */
-    --chart-4: 50 70% 50%; /* Yellow/Gold */
-    --chart-5: 300 50% 60%; /* Purple */
+    --chart-1: 205 90% 50%;
+    --chart-2: 25 80% 60%;
+    --chart-3: 170 65% 40%;
+    --chart-4: 50 70% 50%;
+    --chart-5: 300 50% 60%;
   }
 
   .dark {
-    /* For dark mode, we'd need to define a dark slate/blue theme.
-       Keeping the existing dark theme for now, can be updated if needed. */
-    --background: 220 10% 10%;
-    --foreground: 220 20% 90%;
+    /* Define dark theme variables if needed, for now mirroring light theme with darker slate */
+    --background: 220 10% 10%; /* Dark slate */
+    --foreground: 220 20% 90%; /* Light slate text */
 
-    --card: 220 10% 15%;
+    --card: 220 10% 15%; /* Darker card */
     --card-foreground: 220 20% 90%;
 
     --popover: 220 10% 8%;
     --popover-foreground: 220 20% 90%;
 
-    --primary: 217 91.2% 59.8%; /* brighter blue-500 */
+    --primary: 205 90% 55%; /* Brighter blue for dark mode */
     --primary-foreground: 220 10% 10%;
 
     --secondary: 220 10% 20%;
@@ -71,17 +66,17 @@ body {
     --muted: 220 10% 18%;
     --muted-foreground: 220 15% 65%;
 
-    --accent: 220 10% 20%; /* Dark hover */
-    --accent-foreground: 217 91.2% 59.8%; /* Brighter blue text on hover */
+    --accent: 205 90% 20%; /* Darker sky blue for hover */
+    --accent-foreground: 205 90% 55%;
 
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 10% 25%;
     --input: 220 10% 25%;
-    --ring: 217 91.2% 59.8%;
+    --ring: 205 90% 55%;
 
-    --chart-1: 217 91.2% 59.8%;
+    --chart-1: 205 90% 55%;
     --chart-2: 25 70% 65%;
     --chart-3: 170 60% 50%;
     --chart-4: 50 65% 55%;
