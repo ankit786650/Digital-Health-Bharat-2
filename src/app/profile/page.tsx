@@ -30,6 +30,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { AlertTriangle, Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -57,19 +58,25 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: "Sophia",
+      firstName: "Kishan", // Updated name
       middleName: "",
-      lastName: "Davis",
+      lastName: "Davis", // Example last name
       dateOfBirth: new Date("1990-07-22"),
-      gender: "female",
+      gender: "male", // Example gender
       primaryPhone: "(555) 123-4567",
-      primaryEmail: "sophia.davis@example.com",
+      primaryEmail: "kishan.davis@example.com", // Example email
       preferredLanguage: "English, Hindi",
-      heightCm: 165,
-      weightKg: 60,
+      heightCm: 170, // Example height
+      weightKg: 70,  // Example weight
       bloodType: "O+",
       chronicConditions: "Migraine, Seasonal Allergies",
       avatarUrl: "https://placehold.co/128x128.png",
@@ -81,6 +88,14 @@ export default function ProfilePage() {
   function onSubmit(data: ProfileFormValues) {
     console.log(data);
     // Handle profile update logic here
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading profile...</p>
+      </div>
+    );
   }
 
   return (
@@ -101,7 +116,7 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      <Form {...form}>
+      <Form {...form} suppressHydrationWarning>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Personal Details */}
           <Card>
