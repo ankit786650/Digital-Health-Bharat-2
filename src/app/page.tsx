@@ -3,88 +3,132 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BellRing, CalendarDays, FilePlus2, Pill } from "lucide-react";
-import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, PlusCircle, Pill, Check, X, MoreHorizontal, HeartPulse, ShieldCheck, FlaskConical, FileText, Activity, Sun } from "lucide-react"; // Changed FileShield to FileText
 import Link from "next/link";
+
+// Placeholder data
+const upcomingMedications = [
+  { name: "Amoxicillin", nextDose: "10:00 AM", dosage: "(250mg)", icon: Pill, iconColor: "bg-teal-100 text-teal-600", taken: false, missed: false },
+  { name: "Ibuprofen", nextDose: "12:00 PM", dosage: "(200mg)", icon: Activity, iconColor: "bg-purple-100 text-purple-600", taken: true, missed: false },
+  { name: "Vitamin D", nextDose: "06:00 PM", dosage: "(1000 IU)", icon: Sun, iconColor: "bg-yellow-100 text-yellow-600", taken: false, missed: true },
+];
+
+const recentAppointments = [
+  { type: "Cardiology Checkup", doctor: "Dr. Emily Clark", date: "10 Jul 2024", icon: HeartPulse, iconColor: "bg-red-100 text-red-600" },
+  { type: "Annual Physical", doctor: "Dr. Robert Harris", date: "02 Jul 2024", icon: ShieldCheck, iconColor: "bg-blue-100 text-blue-600" },
+];
+
+const latestDocuments = [
+  { name: "Lab Results - Blood Test", uploadedDate: "15 Jul 2024", icon: FlaskConical, iconColor: "bg-green-100 text-green-600" },
+  { name: "Insurance Policy Update", uploadedDate: "20 Jun 2024", icon: FileText, iconColor: "bg-indigo-100 text-indigo-600" }, // Changed FileShield to FileText
+];
 
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8 p-6 rounded-lg shadow-md bg-gradient-to-r from-primary to-teal-600 text-primary-foreground">
-        <h1 className="text-4xl font-bold mb-2">Welcome to MediMinder AI!</h1>
-        <p className="text-lg text-primary-foreground/90">
-          Your intelligent health companion for managing medications and tracking medical history.
+    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground">Welcome, Sophia!</h1>
+        <p className="text-md text-muted-foreground">
+          Here&apos;s your health overview for today.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium">Upcoming Reminders</CardTitle>
-            <BellRing className="h-6 w-6 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">3 Reminders Today</div>
-            <p className="text-xs text-muted-foreground">
-              Next: Paracetamol 500mg at 2:00 PM
-            </p>
-            <Button asChild variant="link" className="px-0 text-primary hover:text-accent">
-              <Link href="/reminders">View All Reminders</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main content area (Upcoming Medications) */}
+        <div className="lg:w-2/3 space-y-6">
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-semibold">Upcoming Medications</CardTitle>
+              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
+                <Link href="/reminders">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {upcomingMedications.map((med, index) => (
+                <Card key={index} className="bg-muted p-4 rounded-lg flex items-center justify-between shadow-none border-none">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${med.iconColor}`}>
+                      <med.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{med.name}</p>
+                      <p className="text-sm text-muted-foreground">Next dose: {med.nextDose} <span className="text-xs">{med.dosage}</span></p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon-sm" className={`h-7 w-7 ${med.taken ? 'text-green-500' : 'text-muted-foreground/50 hover:text-green-500'}`}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" className={`h-7 w-7 ${med.missed ? 'text-destructive' : 'text-muted-foreground/50 hover:text-destructive'}`}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-muted-foreground/70 hover:text-foreground">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+              <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-primary">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Medication
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium">Recent Visit</CardTitle>
-            <CalendarDays className="h-6 w-6 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">Dr. Smith - July 25, 2024</div>
-            <p className="text-xs text-muted-foreground">
-              Follow-up check for seasonal flu.
-            </p>
-            <Button asChild variant="link" className="px-0 text-primary hover:text-accent">
-              <Link href="/visits">View Visit History</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Right Sidebar area (Appointments, Documents) */}
+        <div className="lg:w-1/3 space-y-6">
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-semibold">Recent Appointments</CardTitle>
+              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
+                <Link href="/visits">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentAppointments.map((appt, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                  <div className={`p-2 rounded-full ${appt.iconColor}`}>
+                    <appt.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm text-foreground">{appt.type}</p>
+                    <p className="text-xs text-muted-foreground">{appt.doctor} &bull; {appt.date}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-             <Pill className="h-6 w-6 text-accent" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild className="w-full bg-primary hover:bg-primary/90">
-              <Link href="/reminders#add-manual"><Pill className="mr-2 h-4 w-4" /> Add Manual Reminder</Link>
-            </Button>
-            <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/reminders#upload-prescription"><FilePlus2 className="mr-2 h-4 w-4" /> Upload Prescription</Link>
-            </Button>
-          </CardContent>
-        </Card>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-semibold">Latest Documents</CardTitle>
+              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
+                <Link href="/documents">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {latestDocuments.map((doc, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                  <div className={`p-2 rounded-full ${doc.iconColor}`}>
+                    <doc.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm text-foreground">{doc.name}</p>
+                    <p className="text-xs text-muted-foreground">Uploaded on {doc.uploadedDate}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <Card className="shadow-xl overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-2xl">Stay on Top of Your Health</CardTitle>
-          <CardDescription>
-            MediMinder AI helps you organize your medical life seamlessly. Explore features like automatic reminder setup from prescriptions, manual reminders, visit tracking, and secure document storage.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative h-60 w-full rounded-md overflow-hidden">
-            <Image
-              src="https://placehold.co/800x400.png"
-              alt="Healthcare illustration"
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint="health tech illustration"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      
+      {/* Page Footer */}
+      <footer className="text-center text-sm text-muted-foreground pt-8">
+        © 2024 Digital Health Bharat. All rights reserved.
+      </footer>
     </div>
   );
 }
