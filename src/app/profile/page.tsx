@@ -50,7 +50,7 @@ const profileFormSchema = z.object({
   preferredLanguage: z.string().optional(),
   heightCm: z.coerce.number().positive("Height must be positive").optional(),
   weightKg: z.coerce.number().positive("Weight must be positive").optional(),
-  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"]).optional(),
+  bloodType: z.enum(["a_pos", "a_neg", "b_pos", "b_neg", "ab_pos", "ab_neg", "o_pos", "o_neg", "unknown"]).optional(),
   chronicConditions: z.string().optional(),
   avatarUrl: z.string().url().optional(),
 });
@@ -59,6 +59,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
   const [isMounted, setIsMounted] = useState(false);
+  const [calculatedBmi, setCalculatedBmi] = useState<string>("N/A");
 
   useEffect(() => {
     setIsMounted(true);
@@ -67,23 +68,39 @@ export default function ProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: "Kishan", 
+      firstName: "Kishan",
       middleName: "",
-      lastName: "Davis", 
+      lastName: "Davis",
       dateOfBirth: new Date("1990-07-22"),
-      gender: "male", 
+      gender: "male",
       primaryPhone: "(555) 123-4567",
-      primaryEmail: "kishan.davis@example.com", 
+      primaryEmail: "kishan.davis@example.com",
       preferredLanguage: "English, Hindi",
-      heightCm: 170, 
-      weightKg: 70,  
-      bloodType: "O+",
+      heightCm: 170,
+      weightKg: 70,
+      bloodType: "o_pos",
       chronicConditions: "Migraine, Seasonal Allergies",
       avatarUrl: "https://placehold.co/128x128.png",
+      emergencyContact1Name: "Jane Doe",
       emergencyContact1Phone: "(555) 987-6543",
+      emergencyContact2Name: "John Smith",
       emergencyContact2Phone: "(555) 111-2222",
     },
   });
+
+  const heightCm = form.watch("heightCm");
+  const weightKg = form.watch("weightKg");
+
+  useEffect(() => {
+    if (heightCm && weightKg && heightCm > 0 && weightKg > 0) {
+      const heightM = heightCm / 100;
+      const bmi = weightKg / (heightM * heightM);
+      setCalculatedBmi(bmi.toFixed(1));
+    } else {
+      setCalculatedBmi("N/A");
+    }
+  }, [heightCm, weightKg]);
+
 
   function onSubmit(data: ProfileFormValues) {
     console.log(data);
@@ -313,14 +330,14 @@ export default function ProfilePage() {
               <FormField control={form.control} name="heightCm" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Height (cm)</FormLabel>
-                  <FormControl><Input type="number" placeholder="e.g., 170" {...field} /></FormControl>
+                  <FormControl><Input type="number" placeholder="e.g., 170" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="weightKg" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Weight (kg)</FormLabel>
-                  <FormControl><Input type="number" placeholder="e.g., 70" {...field} /></FormControl>
+                  <FormControl><Input type="number" placeholder="e.g., 70" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -330,9 +347,15 @@ export default function ProfilePage() {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select blood type" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"].map(type => (
-                        <SelectItem key={type} value={type.toLowerCase().replace('+', 'p').replace('-', 'n')}>{type}</SelectItem>
-                      ))}
+                      <SelectItem value="a_pos">A+</SelectItem>
+                      <SelectItem value="a_neg">A-</SelectItem>
+                      <SelectItem value="b_pos">B+</SelectItem>
+                      <SelectItem value="b_neg">B-</SelectItem>
+                      <SelectItem value="ab_pos">AB+</SelectItem>
+                      <SelectItem value="ab_neg">AB-</SelectItem>
+                      <SelectItem value="o_pos">O+</SelectItem>
+                      <SelectItem value="o_neg">O-</SelectItem>
+                      <SelectItem value="unknown">Unknown</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -340,7 +363,7 @@ export default function ProfilePage() {
               )} />
                <FormItem>
                   <FormLabel>BMI</FormLabel>
-                  <Input value="N/A" readOnly className="bg-muted/50" />
+                  <Input value={calculatedBmi} readOnly className="bg-muted/50 border-input" />
                   <FormDescription className="text-xs">Body Mass Index</FormDescription>
                 </FormItem>
             </CardContent>
@@ -372,3 +395,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
