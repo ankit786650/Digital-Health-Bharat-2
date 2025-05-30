@@ -23,7 +23,7 @@ import {
   FilePenLine,
   Trash2,
   ScanLine,
-  PillIcon as Pill // Renamed to avoid conflict if Pill from lucide-react is directly used
+  Pill // Changed from PillIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -96,20 +96,34 @@ export default function RemindersPage() {
   }
 
   const getStatusBadge = (index: number) : JSX.Element => {
-    const statuses = [
-      <Badge key="active" variant="outline" className="bg-green-100 text-green-700 border-green-300">Active</Badge>,
-      <Badge key="snoozed" variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300">Snoozed</Badge>,
-      <Badge key="inactive" variant="outline" className="bg-red-100 text-red-700 border-red-300">Inactive</Badge>
+    // Cycle through Active, Snoozed, Inactive for demonstration
+    const statusCycle = [
+      { label: "Active", classes: "bg-green-100 text-green-700 border-green-300" },
+      { label: "Snoozed", classes: "bg-yellow-100 text-yellow-700 border-yellow-300" },
+      { label: "Inactive", classes: "bg-red-100 text-red-700 border-red-300" },
     ];
-    return statuses[index % statuses.length];
+    const currentStatus = statusCycle[index % statusCycle.length];
+    return <Badge variant="outline" className={currentStatus.classes}>{currentStatus.label}</Badge>;
   }
 
   const getNextReminderTime = (reminder: MedicationReminder): string => {
     // Placeholder: In a real app, this would calculate based on reminder.specificTimes, reminder.startDate, etc.
     if (reminder.specificTimes && reminder.specificTimes.length > 0) {
-        return `Today, ${reminder.specificTimes[0]}`;
+        // Attempt to format the first time if available
+        const firstTime = reminder.specificTimes[0];
+        if (firstTime.match(/^\d{2}:\d{2}$/)) {
+          const [hours, minutes] = firstTime.split(':');
+          const date = new Date();
+          date.setHours(parseInt(hours), parseInt(minutes));
+          // Basic AM/PM formatting
+          const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
+          const displayHours = date.getHours() % 12 || 12; // Convert 0 to 12 for 12 AM/PM
+          const displayMinutes = date.getMinutes().toString().padStart(2, '0');
+          return `Today, ${displayHours}:${displayMinutes} ${ampm}`;
+        }
+        return `Today, ${firstTime}`; // Fallback if not HH:MM
     }
-    const times = ["Today, 4:00 PM", "Today, 8:00 AM", "Tomorrow, 9:00 AM", "Today, 6:00 PM"];
+    const times = ["Today, 4:00 PM", "Today, 8:00 AM", "Tomorrow, 9:00 AM", "Today, 6:00 PM", "Tomorrow, 10:00 AM"];
     return times[reminders.indexOf(reminder) % times.length];
   }
 
@@ -122,21 +136,30 @@ export default function RemindersPage() {
             <ListChecks className="text-primary h-8 w-8" />
             Medication Reminders
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mt-1">
             Manage all your medication reminders in one place.
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button onClick={() => { setShowUploadForm(true); setShowAddManualForm(false); }} variant="outline"  disabled={showAddManualForm || showUploadForm}>
+          <Button 
+            onClick={() => { setShowUploadForm(true); setShowAddManualForm(false); }} 
+            variant="outline"  
+            disabled={showAddManualForm || showUploadForm}
+            className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+          >
             <ScanLine className="mr-2 h-4 w-4" /> Scan Prescription
           </Button>
-          <Button onClick={() => { setShowAddManualForm(true); setShowUploadForm(false); }} className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={showAddManualForm || showUploadForm}>
+          <Button 
+            onClick={() => { setShowAddManualForm(true); setShowUploadForm(false); }} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90" 
+            disabled={showAddManualForm || showUploadForm}
+          >
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Reminder
           </Button>
         </div>
       </div>
 
-      {(showAddManualForm || showUploadForm) && <Separator />}
+      {(showAddManualForm || showUploadForm) && <Separator className="my-6"/>}
 
       {showAddManualForm && (
         <div
@@ -154,49 +177,51 @@ export default function RemindersPage() {
         >
           <PrescriptionUploadForm
             onRemindersGenerated={handleGeneratedReminders}
+            onCancel={handleCancelAddForm}
           />
         </div>
       )}
 
-      <Separator />
+      {(showAddManualForm || showUploadForm) && <Separator className="my-6"/>}
+
 
       <div>
         <h2 className="text-2xl font-semibold mb-6">All Reminders</h2>
         {reminders.length === 0 && !showAddManualForm && !showUploadForm ? (
-           <Card className="text-center py-10 shadow-sm">
+           <Card className="text-center py-10 shadow-sm border-border">
             <CardContent className="flex flex-col items-center justify-center">
               <Pill className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground text-lg">No reminders set up yet.</p>
-              <p className="text-sm text-muted-foreground">
-                Add reminders manually or scan a prescription to get started.
+              <p className="text-muted-foreground text-lg font-medium">No reminders set up yet.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Click "Add New Reminder" or "Scan Prescription" to get started.
               </p>
             </CardContent>
           </Card>
         ) : (
           reminders.length > 0 && !showAddManualForm && !showUploadForm && (
-          <Card className="shadow-sm">
+          <Card className="shadow-sm border-border">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Medication</TableHead>
-                  <TableHead>Dosage</TableHead>
-                  <TableHead>Frequency</TableHead>
-                  <TableHead>Next Reminder</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold text-foreground">MEDICATION</TableHead>
+                  <TableHead className="font-semibold text-foreground">DOSAGE</TableHead>
+                  <TableHead className="font-semibold text-foreground">FREQUENCY</TableHead>
+                  <TableHead className="font-semibold text-foreground">NEXT REMINDER</TableHead>
+                  <TableHead className="font-semibold text-foreground">SOURCE</TableHead>
+                  <TableHead className="font-semibold text-foreground">STATUS</TableHead>
+                  <TableHead className="text-right font-semibold text-foreground">ACTIONS</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {reminders.map((reminder, index) => (
                   <TableRow key={reminder.id}>
-                    <TableCell className="font-medium">{reminder.name}</TableCell>
-                    <TableCell>{reminder.dosage} ({reminder.dosageForm || 'N/A'})</TableCell>
-                    <TableCell>{reminder.timings}</TableCell>
-                    <TableCell>{getNextReminderTime(reminder)}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium text-foreground">{reminder.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{reminder.dosage} {reminder.dosageForm ? `(${reminder.dosageForm})` : ''}</TableCell>
+                    <TableCell className="text-muted-foreground">{reminder.timings}</TableCell>
+                    <TableCell className="text-muted-foreground">{getNextReminderTime(reminder)}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {reminder.isGenerated ? (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                           <BotMessageSquare className="h-4 w-4 text-primary" /> OCR Scan
                         </span>
                       ) : (
@@ -241,7 +266,7 @@ export default function RemindersPage() {
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => handleDeleteReminder(reminderToDelete)}
+                onClick={() => handleDeleteReminder(reminderToDelete!)} // Added non-null assertion
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete
@@ -253,3 +278,5 @@ export default function RemindersPage() {
     </div>
   );
 }
+
+    

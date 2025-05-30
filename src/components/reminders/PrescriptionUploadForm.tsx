@@ -9,14 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import type { MedicationReminder } from "@/lib/types";
 import { processPrescriptionImage, ProcessPrescriptionResult } from "@/lib/actions";
-import { UploadCloud, Loader2 } from "lucide-react";
+import { UploadCloud, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
 interface PrescriptionUploadFormProps {
   onRemindersGenerated: (reminders: MedicationReminder[]) => void;
+  onCancel: () => void;
 }
 
-export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUploadFormProps) {
+export function PrescriptionUploadForm({ onRemindersGenerated, onCancel }: PrescriptionUploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +52,7 @@ export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUpl
     setIsLoading(true);
     try {
       const result: ProcessPrescriptionResult = await processPrescriptionImage(filePreview);
-      if (result.success && result.medications) {
+      if (result.success && result.medications && result.medications.length > 0) {
         onRemindersGenerated(result.medications);
         toast({
           title: "Success!",
@@ -59,7 +60,14 @@ export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUpl
         });
         setSelectedFile(null);
         setFilePreview(null);
-      } else {
+      } else if (result.success && result.medications && result.medications.length === 0) {
+         toast({
+          title: "No medications found",
+          description: "The AI could not find any medication details in the image.",
+          variant: "default",
+        });
+      }
+      else {
         toast({
           title: "Extraction Failed",
           description: result.error || "Could not extract medication details. Please try again or add manually.",
@@ -67,6 +75,7 @@ export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUpl
         });
       }
     } catch (error) {
+      console.error("Error processing prescription upload:", error);
       toast({
         title: "Upload Error",
         description: "An unexpected error occurred. Please try again.",
@@ -78,28 +87,35 @@ export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUpl
   };
 
   return (
-    <Card className="w-full shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><UploadCloud className="text-accent"/>Upload Prescription (AI Powered)</CardTitle>
-        <CardDescription>
-          Upload an image of your prescription. Our AI will extract medication details to create reminders automatically.
-        </CardDescription>
+    <Card className="w-full shadow-lg border-border">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle className="flex items-center gap-2 text-xl"><UploadCloud className="text-primary h-5 w-5" />Scan Prescription (AI Powered)</CardTitle>
+            <CardDescription className="mt-1">
+            Upload an image of your prescription. Our AI will try to extract medication details.
+            </CardDescription>
+        </div>
+         <Button variant="ghost" size="icon-sm" onClick={onCancel} aria-label="Close form">
+            <X className="h-5 w-5" />
+        </Button>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="prescription-file">Prescription Image</Label>
             <Input
               id="prescription-file"
               type="file"
-              accept="image/*"
+              accept="image/png, image/jpeg, image/jpg"
               onChange={handleFileChange}
               className="file:text-sm file:font-medium file:text-primary file:bg-primary-foreground hover:file:bg-primary/10"
+              disabled={isLoading}
             />
+            <p className="text-xs text-muted-foreground">Supported formats: PNG, JPG, JPEG.</p>
           </div>
 
           {filePreview && (
-            <div className="mt-4 border rounded-md p-2">
+            <div className="mt-4 border rounded-md p-2 relative bg-muted/20 border-border">
               <p className="text-sm font-medium mb-2 text-foreground">Preview:</p>
               <Image
                 src={filePreview}
@@ -109,19 +125,35 @@ export function PrescriptionUploadForm({ onRemindersGenerated }: PrescriptionUpl
                 className="rounded-md object-contain max-h-48 w-auto mx-auto"
                 data-ai-hint="prescription image"
               />
+               <Button 
+                variant="ghost" 
+                size="icon-xs" 
+                className="absolute top-1 right-1 bg-card hover:bg-muted"
+                onClick={() => {setSelectedFile(null); setFilePreview(null);}}
+                type="button"
+                aria-label="Clear preview"
+               >
+                <X className="h-3 w-3"/>
+               </Button>
             </div>
           )}
-
-          <Button type="submit" disabled={isLoading || !selectedFile} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-            {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <UploadCloud className="mr-2 h-4 w-4" />
-            )}
-            {isLoading ? "Processing..." : "Upload and Extract Reminders"}
-          </Button>
+            <div className="flex justify-end gap-3 pt-2">
+                 <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                     Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading || !selectedFile} className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]">
+                    {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                    <ScanLine className="mr-2 h-4 w-4" /> // Changed from UploadCloud
+                    )}
+                    {isLoading ? "Processing..." : "Extract Details"}
+                </Button>
+            </div>
         </form>
       </CardContent>
     </Card>
   );
 }
+
+    
