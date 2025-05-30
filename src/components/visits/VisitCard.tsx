@@ -13,6 +13,8 @@ interface VisitCardProps {
   onDelete: (id: string) => void;
 }
 
+// This component is no longer used directly on the main visits page after the redesign to a list view.
+// It's kept here for potential future use (e.g., a detailed visit view page or modal).
 export function VisitCard({ visit, onEdit, onDelete }: VisitCardProps) {
   const formattedDate = visit.date ? format(new Date(visit.date), "MMMM d, yyyy") : "N/A";
 

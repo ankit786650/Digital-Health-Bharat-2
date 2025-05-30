@@ -3,35 +3,24 @@
 
 import { useState, useEffect } from "react";
 import { AddVisitForm } from "@/components/visits/AddVisitForm";
-import { VisitCard } from "@/components/visits/VisitCard";
 import type { Visit } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ListOrdered, PlusCircle, Stethoscope } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Stethoscope, Plus, BriefcaseMedical, ListOrdered } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Card, CardContent } from "@/components/ui/card";
-
+import { format } from "date-fns";
 
 export default function VisitsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [visitToDelete, setVisitToDelete] = useState<string | null>(null);
+  // Removed visitToDelete state as delete functionality is removed from this list view
   const { toast } = useToast();
 
   useEffect(() => {
     const storedVisits = localStorage.getItem("mediminder_visits");
     if (storedVisits) {
-      setVisits(JSON.parse(storedVisits));
+      setVisits(JSON.parse(storedVisits).sort((a:Visit,b:Visit) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, []);
 
@@ -41,29 +30,19 @@ export default function VisitsPage() {
 
   const handleAddVisit = (newVisit: Visit) => {
     setVisits((prev) => [newVisit, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    toast({ title: "Visit Logged", description: `Visit with ${newVisit.doctorName} on ${newVisit.date} has been recorded.` });
+    toast({ title: "Visit Logged", description: `Visit with ${newVisit.doctorName} on ${format(new Date(newVisit.date), "MMM d, yyyy")} has been recorded.` });
     setShowAddForm(false);
   };
 
-  const handleDeleteVisit = (id: string) => {
-    setVisits((prev) => prev.filter((v) => v.id !== id));
-    toast({ title: "Visit Deleted", description: "The visit record has been removed.", variant: "destructive" });
-    setVisitToDelete(null);
-  };
-  
-  const handleEditVisit = (id: string) => {
-    toast({ title: "Edit Action", description: `Editing visit with ID: ${id}. (Edit functionality not fully implemented)`});
-  };
+  // Edit and Delete functions are removed from this page as the UI to trigger them is no longer present
+  // To re-add, a detail view or action menu per item would be needed.
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2"><Stethoscope className="text-primary"/>Visit History</h1>
-            <p className="text-muted-foreground">Keep a chronological record of your doctor appointments.</p>
-        </div>
+        <h1 className="text-3xl font-bold flex items-center gap-2"><Stethoscope className="h-8 w-8 text-primary"/>Doctor Visits</h1>
         <Button onClick={() => setShowAddForm(prev => !prev)} variant={showAddForm ? "outline" : "default"}>
-          <PlusCircle className="mr-2 h-4 w-4" /> {showAddForm ? "Cancel" : "Log New Visit"}
+          <Plus className="mr-2 h-4 w-4" /> {showAddForm ? "Cancel" : "Add Visit"}
         </Button>
       </div>
 
@@ -75,46 +54,43 @@ export default function VisitsPage() {
         </div>
       )}
       
-      <Separator />
+      <Separator className={showAddForm ? "" : "hidden"}/>
 
-      <div>
-        <h2 className="text-2xl font-semibold mb-6">Your Recorded Visits</h2>
-        {visits.length === 0 ? (
-          <Card className="text-center py-10">
-            <CardContent>
-                <ListOrdered className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No visits recorded yet.</p>
-                <p className="text-sm text-muted-foreground">Click "Log New Visit" to add your first record.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visits.map((visit) => (
-              <VisitCard key={visit.id} visit={visit} onEdit={handleEditVisit} onDelete={() => setVisitToDelete(visit.id)} />
-            ))}
-          </div>
-        )}
-      </div>
-
-       {visitToDelete && (
-        <AlertDialog open={!!visitToDelete} onOpenChange={() => setVisitToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the visit record with 
-                "{visits.find(v => v.id === visitToDelete)?.doctorName}" on {visits.find(v => v.id === visitToDelete)?.date}.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setVisitToDelete(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDeleteVisit(visitToDelete)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Recent Visits</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {visits.length === 0 && !showAddForm ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <ListOrdered className="h-12 w-12 mx-auto mb-4" />
+              <p>No visits recorded yet.</p>
+              <p className="text-sm">Click "+ Add Visit" to log your first appointment.</p>
+            </div>
+          ) : (
+            <div className="space-y-0">
+              {visits.map((visit) => (
+                <div key={visit.id} className="flex items-start gap-4 py-4 border-b last:border-b-0">
+                  <div className="bg-blue-100 text-primary p-3 rounded-full mt-1">
+                    <BriefcaseMedical className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">
+                      {format(new Date(visit.date), "MMMM d, yyyy")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      <span className="font-medium text-foreground/90">Clinical notes:</span> {visit.notes || "No notes provided."}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Dr. {visit.doctorName}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
