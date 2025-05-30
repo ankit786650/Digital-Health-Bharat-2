@@ -17,11 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { Visit } from "@/lib/types";
-import { CalendarPlus, UserMdIcon } from "lucide-react"; // Assuming UserMdIcon or similar for doctor
-
-// Fallback for UserMdIcon if not available
-const DoctorIcon = UserMdIcon || (() => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-cog"><path d="M2 21a8 8 0 0 1 10.721-7.673"/><circle cx="10" cy="7" r="4"/><path d="M17.5 17.5L16 22l-1.5-1.5"/><path d="M22 16l-1.5-1.5L19 16"/><circle cx="19" cy="19" r="3"/></svg>);
-
+import { CalendarPlus, UserIcon } from "lucide-react"; // Changed UserMdIcon to UserIcon
 
 const visitFormSchema = z.object({
   date: z.string().refine((date) => !isNaN(Date.parse(date)), {
@@ -86,7 +82,10 @@ export function AddVisitForm({ onAddVisit }: AddVisitFormProps) {
                 <FormItem>
                   <FormLabel>Doctor's Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Dr. Jane Smith" {...field} />
+                    <div className="relative flex items-center">
+                      <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input placeholder="e.g., Dr. Jane Smith" {...field} className="pl-10" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

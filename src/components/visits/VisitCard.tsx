@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Visit } from "@/lib/types";
-import { CalendarDays, Edit3, Trash2, UserCircle } from "lucide-react"; // Changed Stethoscope to UserCircle for doctor
+import { CalendarDays, Edit3, Trash2, UserIcon } from "lucide-react"; // Changed from UserCircle to UserIcon
 import { format } from "date-fns";
 
 interface VisitCardProps {
@@ -21,7 +21,7 @@ export function VisitCard({ visit, onEdit, onDelete }: VisitCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl flex items-center gap-2">
-            <UserCircle className="text-primary h-6 w-6" />
+            <UserIcon className="text-primary h-6 w-6" />
             {visit.doctorName}
           </CardTitle>
         </div>
