@@ -1,14 +1,123 @@
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react"; // Renamed FileText to DocumentIcon to avoid conflict
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+const upcomingMedications = [
+  { name: "Amoxicillin", time: "10:00 AM", icon: PlusCircle },
+  { name: "Ibuprofen", time: "12:00 PM", icon: PlusCircle },
+  { name: "Vitamin D", time: "06:00 PM", icon: PlusCircle },
+];
+
+const recentVisits = [
+  { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart, iconBg: "bg-green-100", iconColor: "text-green-600" },
+  { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+];
+
+const recentDocuments = [
+  { name: "Lab Results", date: "07/15/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+  { name: "Insurance Card", date: "06/20/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+];
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 space-y-4">
-      <h1 className="text-4xl font-bold">Welcome to Your App!</h1>
-      <p className="text-lg text-muted-foreground">
-        This is a fresh start. Begin your redesign here.
-      </p>
-      <Button>Get Started</Button>
-    </main>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Welcome back, Sophia</h1>
+        <p className="text-muted-foreground mt-1">Here's your health dashboard for today.</p>
+      </div>
+
+      {/* Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Upcoming Medications (col-span-2) */}
+        <section className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Upcoming Medications</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {upcomingMedications.map((med) => (
+                <div key={med.name} className="flex items-center justify-between p-3 bg-card rounded-lg border hover:shadow-sm transition-shadow">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-100 text-primary p-2.5 rounded-full">
+                      <med.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-card-foreground">{med.name}</p>
+                      <p className="text-xs text-muted-foreground">{med.time}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full asChild">
+                <Link href="/medications">View All Medications</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </section>
+
+        {/* Right Sidebar (Recent Visits, Documents) */}
+        <aside className="space-y-6">
+          {/* Recent Visits */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Recent Visits</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentVisits.map((visit) => (
+                <div key={visit.title} className="flex items-center gap-3">
+                  <div className={cn("p-2.5 rounded-full", visit.iconBg)}>
+                    <visit.icon className={cn("h-5 w-5", visit.iconColor)} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">{visit.title}</p>
+                    <p className="text-xs text-muted-foreground">{visit.doctor}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full asChild">
+                <Link href="/visits">View All Visits</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Documents */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Documents</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentDocuments.map((doc) => (
+                <div key={doc.name} className="flex items-center gap-3">
+                   <div className={cn("p-2.5 rounded-full", doc.iconBg)}>
+                    <doc.icon className={cn("h-5 w-5", doc.iconColor)} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">{doc.name}</p>
+                    <p className="text-xs text-muted-foreground">Uploaded on {doc.date}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full asChild">
+                <Link href="/documents">View All Documents</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </aside>
+      </div>
+    </div>
   );
 }
