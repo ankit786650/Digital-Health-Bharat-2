@@ -18,12 +18,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/", label: "Dashboard" },
-  { href: "/patients", label: "Patients" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/messages", label: "Messages" },
+  { href: "/reminders", label: "Reminders" },
+  { href: "/visits", label: "Visits" },
   { href: "/documents", label: "Documents" },
-  { href: "/reports", label: "Reports" },
-  { href: "/profile", label: "Profile" }, // Added Profile link
+  { href: "/profile", label: "Profile" }, 
+  { href: "/settings", label: "Settings" },
 ];
 
 const AppLogo = () => (
@@ -49,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item) => {
-              const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/");
+              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.label}
@@ -73,12 +72,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Search className="h-5 w-5" />
               </div>
               <Input
+                suppressHydrationWarning
                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-background focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
                 placeholder="Search"
               />
             </div>
           </form>
-          <Button variant="ghost" size="icon" className="text-slate-500 hover:text-primary relative flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent">
+          <Button 
+            suppressHydrationWarning
+            variant="ghost" 
+            size="icon" 
+            className="text-slate-500 hover:text-primary relative flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent">
             <Bell className="h-6 w-6" />
           </Button>
           <Avatar className="h-10 w-10 border-2 border-card shadow-sm">
@@ -102,7 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={cn(
                   "block px-3 py-2 rounded-md text-base font-medium",
-                  isActive ? "bg-accent text-primary-foreground" : "text-slate-700 hover:bg-accent/50 hover:text-primary"
+                  isActive ? "bg-accent text-primary" : "text-slate-700 hover:bg-accent/50 hover:text-primary"
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -116,6 +120,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Search className="h-5 w-5" />
               </div>
               <Input
+                suppressHydrationWarning
                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary border-border bg-background focus:border-primary h-full placeholder:text-slate-500 pl-10 pr-3 text-sm font-normal leading-normal"
                 placeholder="Search"
               />
