@@ -23,7 +23,7 @@ import {
   FilePenLine,
   Trash2,
   ScanLine,
-  Pill // Changed from PillIcon
+  Pill
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
