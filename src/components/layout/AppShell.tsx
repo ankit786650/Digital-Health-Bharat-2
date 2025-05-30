@@ -25,7 +25,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/medications', label: 'Medications', icon: Pill },
+  { href: '/reminders', label: 'Medications', icon: Pill }, // Changed from /medications
   { href: '/visits', label: 'Visits', icon: CalendarDays },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
