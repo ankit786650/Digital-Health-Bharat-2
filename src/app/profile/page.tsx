@@ -30,7 +30,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -60,6 +60,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export default function ProfilePage() {
   const [isMounted, setIsMounted] = useState(false);
   const [calculatedBmi, setCalculatedBmi] = useState<string>("N/A");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -105,7 +106,24 @@ export default function ProfilePage() {
   function onSubmit(data: ProfileFormValues) {
     console.log(data);
     // Handle profile update logic here
+    // If data.avatarUrl is a Data URL, you might want to upload it to a storage service
+    // and replace data.avatarUrl with the actual stored image URL before saving to a database.
   }
+
+  const handleAvatarChangeClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("avatarUrl", reader.result as string, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   if (!isMounted) {
     return (
@@ -127,7 +145,14 @@ export default function ProfilePage() {
           <AvatarImage src={form.watch("avatarUrl") || "https://placehold.co/128x128.png"} alt="User Avatar" data-ai-hint="person face" />
           <AvatarFallback>{form.getValues("firstName")?.charAt(0)}{form.getValues("lastName")?.charAt(0)}</AvatarFallback>
         </Avatar>
-        <Button variant="ghost" size="sm">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          style={{ display: "none" }}
+        />
+        <Button variant="ghost" size="sm" onClick={handleAvatarChangeClick}>
           <Camera className="mr-2 h-4 w-4" />
           Change Picture
         </Button>
@@ -246,7 +271,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Emergency Contacts */}
-          <Card>
+           <Card>
             <CardHeader className="bg-destructive text-destructive-foreground rounded-t-lg p-3 flex justify-center items-center">
               <a href="tel:108" className="flex items-center gap-2 text-sm font-medium hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-destructive-foreground rounded">
                 <Phone className="h-5 w-5" />
@@ -396,3 +421,5 @@ export default function ProfilePage() {
   );
 }
 
+
+    
