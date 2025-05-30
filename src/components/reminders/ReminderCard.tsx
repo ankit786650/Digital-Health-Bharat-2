@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { MedicationReminder } from "@/lib/types";
-import { Pill, Clock, AlertTriangle, CheckCircle, Edit3, Trash2 } from "lucide-react";
+import { Pill, Clock, AlertTriangle, CheckCircle, Edit3, Trash2, BotMessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ReminderCardProps {
@@ -13,6 +13,8 @@ interface ReminderCardProps {
   onDelete: (id: string) => void;
 }
 
+// This component is no longer used directly on the main reminders page after the redesign to a table view.
+// It's kept here for potential future use or if a card-based view is desired elsewhere.
 export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) {
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
@@ -23,7 +25,10 @@ export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) 
             {reminder.name}
           </CardTitle>
           {reminder.isGenerated && (
-            <Badge variant="outline" className="text-xs border-accent text-accent">AI Generated</Badge>
+            <Badge variant="outline" className="text-xs border-accent text-accent flex items-center gap-1">
+              <BotMessageSquare className="h-3 w-3" />
+              AI Gen
+            </Badge>
           )}
         </div>
         <CardDescription>{reminder.dosage}</CardDescription>
@@ -57,3 +62,4 @@ export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) 
     </Card>
   );
 }
+
