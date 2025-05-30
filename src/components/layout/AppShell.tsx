@@ -16,13 +16,14 @@ interface NavItem {
   label: string;
 }
 
+// Updated navItems to match the "HealthHub" top-nav design
 const navItems: NavItem[] = [
   { href: "/", label: "Dashboard" },
-  { href: "/reminders", label: "Reminders" },
-  { href: "/visits", label: "Visits" },
+  { href: "/patients", label: "Patients" },
+  { href: "/calendar", label: "Calendar" },
+  { href: "/messages", label: "Messages" },
   { href: "/documents", label: "Documents" },
-  { href: "/profile", label: "Profile" }, 
-  { href: "/settings", label: "Settings" },
+  { href: "/reports", label: "Reports" },
 ];
 
 const AppLogo = () => (
@@ -48,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+              const isActive = pathname === item.href || (item.href === "/documents" && pathname.startsWith(item.href)); // Special handling for /documents if it was active in design
               return (
                 <Link
                   key={item.label}
@@ -78,10 +79,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               />
             </div>
           </form>
-          <Button 
+          <Button
             suppressHydrationWarning
-            variant="ghost" 
-            size="icon" 
+            variant="ghost"
+            size="icon"
             className="text-slate-500 hover:text-primary relative flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent">
             <Bell className="h-6 w-6" />
           </Button>
