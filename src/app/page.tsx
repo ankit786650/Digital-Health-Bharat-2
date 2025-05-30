@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react"; // Renamed FileText to DocumentIcon to avoid conflict
+import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ const upcomingMedications = [
   { name: "Vitamin D", time: "06:00 PM", icon: PlusCircle },
 ];
 
-const recentVisits = [
+const recentAppointments = [ // Renamed from recentVisits
   { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart, iconBg: "bg-green-100", iconColor: "text-green-600" },
   { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
 ];
@@ -59,35 +59,35 @@ export default function HomePage() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full asChild">
-                <Link href="/medications">View All Medications</Link>
+                <Link href="/reminders">View All Medications</Link>
               </Button>
             </CardFooter>
           </Card>
         </section>
 
-        {/* Right Sidebar (Recent Visits, Documents) */}
+        {/* Right Sidebar (Recent Appointments, Documents) */}
         <aside className="space-y-6">
-          {/* Recent Visits */}
+          {/* Recent Appointments */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Recent Visits</CardTitle>
+              <CardTitle className="text-xl">Recent Appointments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentVisits.map((visit) => (
-                <div key={visit.title} className="flex items-center gap-3">
-                  <div className={cn("p-2.5 rounded-full", visit.iconBg)}>
-                    <visit.icon className={cn("h-5 w-5", visit.iconColor)} />
+              {recentAppointments.map((appointment) => ( // Renamed from visit to appointment
+                <div key={appointment.title} className="flex items-center gap-3">
+                  <div className={cn("p-2.5 rounded-full", appointment.iconBg)}>
+                    <appointment.icon className={cn("h-5 w-5", appointment.iconColor)} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-card-foreground">{visit.title}</p>
-                    <p className="text-xs text-muted-foreground">{visit.doctor}</p>
+                    <p className="text-sm font-medium text-card-foreground">{appointment.title}</p>
+                    <p className="text-xs text-muted-foreground">{appointment.doctor}</p>
                   </div>
                 </div>
               ))}
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full asChild">
-                <Link href="/visits">View All Visits</Link>
+                <Link href="/visits">View All Appointments</Link>
               </Button>
             </CardFooter>
           </Card>

@@ -25,7 +25,7 @@ const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg", "image
 
 const visitFormSchema = z.object({
   date: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: "Visit date is required.",
+    message: "Appointment date is required.",
   }),
   doctorName: z.string().min(2, "Doctor's name must be at least 2 characters."),
   specialization: z.string().optional(),
@@ -89,7 +89,7 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
   return (
     <Card className="w-full shadow-xl rounded-xl bg-card ring-1 ring-slate-900/5">
       <CardHeader className="p-6 border-b border-border">
-        <CardTitle className="text-lg font-semibold text-card-foreground">Add New Visit</CardTitle>
+        <CardTitle className="text-lg font-semibold text-card-foreground">Add New Appointment</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
         <Form {...form}>
@@ -99,7 +99,7 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="visit-date">Visit Date</FormLabel>
+                  <FormLabel htmlFor="visit-date">Appointment Date</FormLabel>
                   <FormControl>
                     <Input type="date" id="visit-date" {...field} />
                   </FormControl>
@@ -138,7 +138,7 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
               name="reasonForVisit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="reason-for-visit">Reason for Visit</FormLabel>
+                  <FormLabel htmlFor="reason-for-visit">Reason for Appointment</FormLabel>
                   <FormControl>
                     <Input id="reason-for-visit" placeholder="e.g., Annual check-up, Follow-up" {...field} />
                   </FormControl>
@@ -222,7 +222,7 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
                 Cancel
               </Button>
               <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Save Visit
+                Save Appointment
               </Button>
             </div>
           </form>

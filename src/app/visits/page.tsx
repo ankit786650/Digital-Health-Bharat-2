@@ -6,7 +6,7 @@ import { AddVisitForm } from "@/components/visits/AddVisitForm";
 import type { Visit } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Stethoscope } from "lucide-react"; // Using Stethoscope for medical_services
+import { Plus, Stethoscope } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 
@@ -44,7 +44,7 @@ export default function VisitsPage() {
       attachedDocuments: newVisit.attachedDocuments || [],
     };
     setVisits((prev) => [visitWithId, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    toast({ title: "Visit Logged", description: `Visit with ${visitWithId.doctorName} on ${format(new Date(visitWithId.date), "MMM d, yyyy")} has been recorded.` });
+    toast({ title: "Appointment Logged", description: `Appointment with ${visitWithId.doctorName} on ${format(new Date(visitWithId.date), "MMM d, yyyy")} has been recorded.` });
     setShowAddForm(false);
   };
 
@@ -52,9 +52,9 @@ export default function VisitsPage() {
     <div className="flex flex-col w-full">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div className="flex-1 min-w-[300px]">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground">Doctor Visits</h1>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground">Doctors Appointment</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            When you tap 'Add Visit,' a simple form pops up. You can fill in the date of your appointment, your doctor's name, and any notes about what happened during the visit. There's also a handy option to set a reminder for your next appointment, including the time and a short note to jog your memory. Plus, if you have any documents from a past visit with the same doctor, you can easily upload them here.
+            When you tap 'Add Appointment,' a simple form pops up. You can fill in the date of your appointment, your doctor's name, and any notes about what happened during the appointment. There's also a handy option to set a reminder for your next appointment, including the time and a short note to jog your memory. Plus, if you have any documents from a past appointment with the same doctor, you can easily upload them here.
           </p>
         </div>
         <div className="relative">
@@ -63,7 +63,7 @@ export default function VisitsPage() {
             className="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary text-primary-foreground text-sm font-semibold leading-normal shadow-sm hover:bg-primary/90 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Plus className="h-4 w-4" />
-            <span className="truncate">{showAddForm ? "Cancel" : "Add Visit"}</span>
+            <span className="truncate">{showAddForm ? "Cancel" : "Add Appointment"}</span>
           </Button>
         </div>
       </div>
@@ -76,14 +76,14 @@ export default function VisitsPage() {
       
       <Card className="shadow-lg rounded-xl overflow-hidden bg-card">
         <CardHeader className="px-6 py-4 border-b border-border">
-          <CardTitle className="text-xl font-semibold leading-tight tracking-tight text-card-foreground">Recent Visits</CardTitle>
+          <CardTitle className="text-xl font-semibold leading-tight tracking-tight text-card-foreground">Recent Appointments</CardTitle>
         </CardHeader>
         <CardContent className="p-0 divide-y divide-border">
           {visits.length === 0 && !showAddForm ? (
             <div className="text-center py-10 px-6 text-muted-foreground">
               <Stethoscope className="h-12 w-12 mx-auto mb-4" />
-              <p>No visits recorded yet.</p>
-              <p className="text-sm">Click "+ Add Visit" to log your first appointment.</p>
+              <p>No appointments recorded yet.</p>
+              <p className="text-sm">Click "+ Add Appointment" to log your first appointment.</p>
             </div>
           ) : (
             visits.map((visit) => (

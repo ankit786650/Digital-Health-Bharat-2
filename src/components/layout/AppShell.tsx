@@ -16,6 +16,8 @@ import {
   LogOut,
   type LucideIcon
 } from 'lucide-react';
+import { Toaster } from "@/components/ui/toaster";
+
 
 interface NavItem {
   href: string;
@@ -25,8 +27,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/reminders', label: 'Medications', icon: Pill }, // Changed from /medications
-  { href: '/visits', label: 'Visits', icon: CalendarDays },
+  { href: '/reminders', label: 'Medications', icon: Pill },
+  { href: '/visits', label: 'Appointments', icon: CalendarDays },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
 ];
@@ -89,6 +91,7 @@ export function AppShell({ children }: AppShellProps) {
       <main className="flex-1 ml-64 p-8 overflow-y-auto bg-card"> {/* bg-card is white for main content panel */}
         {children}
       </main>
+      <Toaster />
     </div>
   );
 }
