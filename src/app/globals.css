@@ -8,43 +8,37 @@ body {
 
 @layer base {
   :root {
-    /* HealthHub Theme (Derived from Document Page HTML) */
-    --background: 220 14.3% 95.9%; /* slate-100 hsl(220, 14.3%, 95.9%) */
-    --foreground: 210 40% 98%; /* slate-50 (using a very light gray for main text on slate-100, for contrast with cards) */
+    /* New Theme based on "Sophia Carter" dashboard image */
+    --background: 220 14.3% 95.9%; /* slate-100 (light gray page background) */
+    --foreground: 222 47.4% 11.2%; /* slate-900 (dark text) */
     
-    /* Specific text colors from HTML */
-    --text-slate-900: 222 47.4% 11.2%;
-    --text-slate-800: 220 26% 20%; 
-    --text-slate-700: 220 13% 46.1%;
-    --text-slate-600: 215.4 16.3% 46.9%;
-    --text-slate-500: 215 20.2% 65.1%;
+    --card: 0 0% 100%; /* white (for cards and sidebar) */
+    --card-foreground: var(--foreground);
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: var(--text-slate-900); /* slate-900 */
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--foreground);
 
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: var(--text-slate-900);
+    --primary: 205 82% 56%; /* Custom blue: #2a9fed */
+    --primary-foreground: 0 0% 100%; /* white text on primary */
 
-    --primary: 205 90% 50%; /* #2a9fed */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
-
-    --secondary: 220 13% 91%; /* slate-200 */
-    --secondary-foreground: var(--text-slate-900);
+    --secondary: 220 13% 91%; /* slate-200 (borders, subtle backgrounds) */
+    --secondary-foreground: var(--foreground);
 
     --muted: 220 13% 91%;    /* slate-200 */
-    --muted-foreground: var(--text-slate-500); /* slate-500 for muted text */
+    --muted-foreground: 215 20.2% 65.1%; /* slate-500 (muted text) */
 
-    --accent: 205 90% 94%; /* sky-100 like bg-sky-50 */
-    --accent-foreground: 205 70% 35%; /* A darker sky blue for text on accent */
+    /* Accent for active nav item in sidebar */
+    --accent: 202 88% 95%; /* sky-100 (light blue background) */
+    --accent-foreground: 203 81% 38%; /* sky-700 (darker blue text/icon) */
 
     --destructive: 0 75% 55%; /* A slightly softer red: #DB4444 */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 83.9%;     /* slate-300 or slate-200 for borders */
-    --input: 220 13% 83.9%;     /* slate-300 */
-    --ring: 205 90% 50%;   /* #2a9fed for focus rings */
+    --border: 220 13% 88%; /* slate-200 for general borders */
+    --input: 220 13% 83.9%;     /* slate-300 for input borders */
+    --ring: 205 82% 56%;   /* #2a9fed for focus rings */
 
-    --radius: 0.5rem; /* Corresponds to rounded-lg in HTML */
+    --radius: 0.5rem; /* Corresponds to rounded-lg */
 
     --chart-1: 205 90% 50%;
     --chart-2: 25 80% 60%;
@@ -54,40 +48,34 @@ body {
   }
 
   .dark {
-    /* Dark theme placeholder - not fully designed from provided HTML */
-    --background: 222 47.4% 11.2%; /* slate-900 */
-    --foreground: 220 14.3% 95.9%; /* slate-100 */
+    /* Dark theme placeholder - needs specific design if required */
+    --background: 222 47.4% 11.2%; 
+    --foreground: 220 14.3% 95.9%;
 
-    --text-slate-900: 220 14.3% 95.9%;
-    --text-slate-800: 220 13% 91%;
-    --text-slate-700: 215.4 16.3% 76.9%;
-    --text-slate-600: 215 20.2% 65.1%;
-    --text-slate-500: 220 13% 46.1%;
-
-    --card: 220 26% 15%; /* Darker card */
-    --card-foreground: var(--text-slate-50);
+    --card: 220 26% 15%;
+    --card-foreground: 220 14.3% 95.9%;
 
     --popover: 220 26% 10%;
-    --popover-foreground: var(--text-slate-50);
+    --popover-foreground: 220 14.3% 95.9%;
 
-    --primary: 205 90% 55%;
+    --primary: 205 82% 60%;
     --primary-foreground: 222 47.4% 11.2%;
 
     --secondary: 220 13% 21%;
-    --secondary-foreground: var(--text-slate-50);
+    --secondary-foreground: 220 14.3% 95.9%;
 
     --muted: 220 13% 21%;
-    --muted-foreground: var(--text-slate-500);
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 205 90% 20%; /* Darker sky */
-    --accent-foreground: 205 80% 85%;
+    --accent: 202 88% 20%; 
+    --accent-foreground: 202 88% 85%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 13% 25%;
     --input: 220 13% 25%;
-    --ring: 205 90% 55%;
+    --ring: 205 82% 60%;
   }
 }
 
@@ -96,14 +84,13 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-slate-700; /* Default body text color from HTML */
+    @apply bg-background text-foreground; 
   }
   h1,h2,h3,h4,h5,h6 {
-    @apply text-slate-900; /* Default heading color */
+    @apply text-foreground; 
   }
 }
 
-/* Custom styles for nav items and inputs if needed */
 .form-input {
   @apply block w-full rounded-md border-input bg-card shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50;
 }

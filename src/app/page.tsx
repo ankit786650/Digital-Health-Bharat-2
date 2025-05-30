@@ -3,35 +3,36 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, PlusCircle, Pill, Check, X, MoreHorizontal, HeartPulse, ShieldCheck, FlaskConical, FileText, Activity, Sun } from "lucide-react"; // Changed FileShield to FileText
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, MoreVertical, Heart, User, FileText as DocumentIcon, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-// Placeholder data
 const upcomingMedications = [
-  { name: "Amoxicillin", nextDose: "10:00 AM", dosage: "(250mg)", icon: Pill, iconColor: "bg-teal-100 text-teal-600", taken: false, missed: false },
-  { name: "Ibuprofen", nextDose: "12:00 PM", dosage: "(200mg)", icon: Activity, iconColor: "bg-purple-100 text-purple-600", taken: true, missed: false },
-  { name: "Vitamin D", nextDose: "06:00 PM", dosage: "(1000 IU)", icon: Sun, iconColor: "bg-yellow-100 text-yellow-600", taken: false, missed: true },
+  { name: "Amoxicillin", time: "10:00 AM", iconColor: "bg-blue-100 text-primary" },
+  { name: "Ibuprofen", time: "12:00 PM", iconColor: "bg-blue-100 text-primary" },
+  { name: "Vitamin D", time: "06:00 PM", iconColor: "bg-blue-100 text-primary" },
 ];
 
-const recentAppointments = [
-  { type: "Cardiology Checkup", doctor: "Dr. Emily Clark", date: "10 Jul 2024", icon: HeartPulse, iconColor: "bg-red-100 text-red-600" },
-  { type: "Annual Physical", doctor: "Dr. Robert Harris", date: "02 Jul 2024", icon: ShieldCheck, iconColor: "bg-blue-100 text-blue-600" },
+const recentVisits = [
+  { type: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart, iconBg: "bg-green-100", iconColor: "text-green-600" },
+  { type: "Annual Physical", doctor: "Dr. Robert Harris", icon: User, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
 ];
 
 const latestDocuments = [
-  { name: "Lab Results - Blood Test", uploadedDate: "15 Jul 2024", icon: FlaskConical, iconColor: "bg-green-100 text-green-600" },
-  { name: "Insurance Policy Update", uploadedDate: "20 Jun 2024", icon: FileText, iconColor: "bg-indigo-100 text-indigo-600" }, // Changed FileShield to FileText
+  { name: "Lab Results", uploadedDate: "07/15/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+  { name: "Insurance Card", uploadedDate: "06/20/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
+    <div className="space-y-8">
       {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">Welcome, Sophia!</h1>
-        <p className="text-md text-muted-foreground">
-          Here&apos;s your health overview for today.
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          Welcome back, Sophia
+        </h1>
+        <p className="text-md text-muted-foreground mt-1">
+          Here&apos;s your health dashboard for today.
         </p>
       </div>
 
@@ -39,39 +40,28 @@ export default function DashboardPage() {
         {/* Main content area (Upcoming Medications) */}
         <div className="lg:w-2/3 space-y-6">
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle className="text-xl font-semibold">Upcoming Medications</CardTitle>
-              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
-                <Link href="/reminders">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
-              </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {upcomingMedications.map((med, index) => (
-                <Card key={index} className="bg-muted p-4 rounded-lg flex items-center justify-between shadow-none border-none">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${med.iconColor}`}>
-                      <med.icon className="h-5 w-5" />
+                <Card key={index} className="p-4 rounded-lg flex items-center justify-between shadow-none border bg-card">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2.5 rounded-full flex items-center justify-center size-10 ${med.iconColor}`}>
+                      <Plus className="h-5 w-5" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{med.name}</p>
-                      <p className="text-sm text-muted-foreground">Next dose: {med.nextDose} <span className="text-xs">{med.dosage}</span></p>
+                      <p className="text-sm text-muted-foreground">{med.time}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon-sm" className={`h-7 w-7 ${med.taken ? 'text-green-500' : 'text-muted-foreground/50 hover:text-green-500'}`}>
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm" className={`h-7 w-7 ${med.missed ? 'text-destructive' : 'text-muted-foreground/50 hover:text-destructive'}`}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-muted-foreground/70 hover:text-foreground">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
+                    <MoreVertical className="h-5 w-5" />
+                  </Button>
                 </Card>
               ))}
-              <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-primary">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Medication
+              <Button variant="outline" className="w-full mt-4 border-primary text-primary hover:bg-primary/10">
+                View All Medications
               </Button>
             </CardContent>
           </Card>
@@ -80,39 +70,36 @@ export default function DashboardPage() {
         {/* Right Sidebar area (Appointments, Documents) */}
         <div className="lg:w-1/3 space-y-6">
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl font-semibold">Recent Appointments</CardTitle>
-              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
-                <Link href="/visits">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
-              </Button>
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Recent Visits</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {recentAppointments.map((appt, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                  <div className={`p-2 rounded-full ${appt.iconColor}`}>
-                    <appt.icon className="h-5 w-5" />
+            <CardContent className="space-y-3">
+              {recentVisits.map((appt, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-accent/50 transition-colors">
+                  <div className={`p-2.5 rounded-full flex items-center justify-center size-10 ${appt.iconBg}`}>
+                    <appt.icon className={`h-5 w-5 ${appt.iconColor}`} />
                   </div>
                   <div>
                     <p className="font-medium text-sm text-foreground">{appt.type}</p>
-                    <p className="text-xs text-muted-foreground">{appt.doctor} &bull; {appt.date}</p>
+                    <p className="text-xs text-muted-foreground">{appt.doctor}</p>
                   </div>
                 </div>
               ))}
+              <Button variant="outline" className="w-full mt-2 border-primary text-primary hover:bg-primary/10">
+                View All Visits
+              </Button>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl font-semibold">Latest Documents</CardTitle>
-              <Button variant="link" size="sm" asChild className="text-primary hover:underline">
-                <Link href="/documents">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
-              </Button>
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Documents</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {latestDocuments.map((doc, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                  <div className={`p-2 rounded-full ${doc.iconColor}`}>
-                    <doc.icon className="h-5 w-5" />
+                <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-accent/50 transition-colors">
+                  <div className={`p-2.5 rounded-full flex items-center justify-center size-10 ${doc.iconBg}`}>
+                    <doc.icon className={`h-5 w-5 ${doc.iconColor}`} />
                   </div>
                   <div>
                     <p className="font-medium text-sm text-foreground">{doc.name}</p>
@@ -120,15 +107,14 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+               <Button variant="outline" className="w-full mt-2 border-primary text-primary hover:bg-primary/10">
+                View All Documents
+              </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-      
-      {/* Page Footer */}
-      <footer className="text-center text-sm text-muted-foreground pt-8">
-        © 2024 Digital Health Bharat. All rights reserved.
-      </footer>
     </div>
   );
 }
+
