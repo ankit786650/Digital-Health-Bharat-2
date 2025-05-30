@@ -8,11 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  Home,
-  Pill,
   CalendarDays,
+  Pill,
   FileText,
-  MessageSquare,
+  BarChart3,
+  MapPin,
+  User,
   LogOut,
   type LucideIcon
 } from 'lucide-react';
@@ -26,11 +27,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/reminders', label: 'Medications', icon: Pill },
   { href: '/visits', label: 'Appointments', icon: CalendarDays },
-  { href: '/documents', label: 'Documents', icon: FileText },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/reminders', label: 'Medication Reminder', icon: Pill },
+  { href: '/documents', label: 'Medical Documents', icon: FileText },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/nearby-facility', label: 'Nearby Facility', icon: MapPin },
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 interface AppShellProps {
