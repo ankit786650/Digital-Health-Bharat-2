@@ -8,27 +8,27 @@ body {
 
 @layer base {
   :root {
-    /* HealthHub Theme (Slate & Blue from provided HTML) */
-    --background: 220 20% 96.1%; /* slate-50 hsl(220, 20%, 96.1%) */
-    --foreground: 220 39.3% 11%;  /* slate-900 hsl(220, 39.3%, 11%) */
+    /* New HealthHub Theme (Slate & Blue from Settings HTML) */
+    --background: 220 14.3% 95.9%; /* slate-100 hsl(220, 14.3%, 95.9%) */
+    --foreground: 220 26% 20%;  /* slate-800 hsl(220, 26%, 20%) approx */
 
     --card: 0 0% 100%; /* White */
-    --card-foreground: 220 39.3% 11%; /* slate-900 */
+    --card-foreground: 220 26% 20%; /* slate-800 */
 
     --popover: 0 0% 100%; /* White */
-    --popover-foreground: 220 39.3% 11%; /* slate-900 */
+    --popover-foreground: 220 26% 20%; /* slate-800 */
 
     --primary: 205 90% 50%; /* #2a9fed hsl(205, 90%, 50%) */
     --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 220 14.3% 95.9%; /* slate-100 hsl(220, 14.3%, 95.9%) */
-    --secondary-foreground: 220 39.3% 11%; /* slate-900 for text on secondary */
+    --secondary: 220 13% 91%; /* slate-200 hsl(220, 13%, 91%) */
+    --secondary-foreground: 220 26% 20%; /* slate-800 for text on secondary */
 
     --muted: 220 13% 91%;    /* slate-200 hsl(220, 13%, 91%) */
     --muted-foreground: 215 20.2% 65.1%; /* slate-500 hsl(215, 20.2%, 65.1%) for text */
 
-    --accent: 205 90% 96.1%; /* sky-50 (for hover backgrounds like bg-sky-100 from html) hsl(205, 90%, 96.1%) */
-    --accent-foreground: 205 90% 45%; /* Similar to primary, but for text on accent hover */
+    --accent: 205 90% 94%; /* sky-100 hsl(205, 90%, 94%) approx for active nav */
+    --accent-foreground: 205 70% 35%; /* sky-700 hsl(205, 70%, 35%) approx for active nav text */
 
     --destructive: 0 75% 55%; /* A slightly softer red: #DB4444 */
     --destructive-foreground: 0 0% 98%; /* Off-white */
@@ -47,31 +47,23 @@ body {
   }
 
   .dark {
-    /* Define dark theme variables if needed, for now mirroring light theme with darker slate */
-    --background: 220 10% 10%; /* Dark slate */
-    --foreground: 220 20% 90%; /* Light slate text */
-
-    --card: 220 10% 15%; /* Darker card */
+    /* Keeping dark theme vars, but the design is light */
+    --background: 220 10% 10%;
+    --foreground: 220 20% 90%;
+    --card: 220 10% 15%;
     --card-foreground: 220 20% 90%;
-
     --popover: 220 10% 8%;
     --popover-foreground: 220 20% 90%;
-
-    --primary: 205 90% 55%; /* Brighter blue for dark mode */
+    --primary: 205 90% 55%;
     --primary-foreground: 220 10% 10%;
-
     --secondary: 220 10% 20%;
     --secondary-foreground: 220 20% 90%;
-
     --muted: 220 10% 18%;
     --muted-foreground: 220 15% 65%;
-
-    --accent: 205 90% 20%; /* Darker sky blue for hover */
-    --accent-foreground: 205 90% 55%;
-
+    --accent: 205 90% 25%; /* Adjusted for dark mode active nav */
+    --accent-foreground: 205 80% 80%; /* Adjusted for dark mode active nav text */
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 98%;
-
     --border: 220 10% 25%;
     --input: 220 10% 25%;
     --ring: 205 90% 55%;
@@ -91,4 +83,26 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom styles for nav items to match HTML */
+.nav-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 transition-colors duration-150;
+}
+.nav-item:hover {
+  @apply bg-muted/50; /* Using muted/50 for hover, similar to slate-50 */
+}
+.nav-item.active {
+  @apply bg-accent text-accent-foreground font-semibold;
+}
+.nav-item.active svg {
+  @apply text-accent-foreground;
+}
+.nav-item svg {
+  @apply text-muted-foreground; /* default icon color slate-500 */
+}
+
+/* Ensure form inputs match the new design */
+.form-input {
+  @apply block w-full rounded-md border-input bg-card shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50;
 }

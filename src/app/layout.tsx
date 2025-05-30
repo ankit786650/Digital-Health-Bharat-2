@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'HealthHub', // Updated App Name
+  title: 'HealthHub', 
   description: 'Your intelligent health companion for medication management and clinical documentation.',
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`} style={{fontFamily: '"Public Sans", "Noto Sans", var(--font-geist-sans), sans-serif'}}>
         <AppShell>
           {children}
         </AppShell>

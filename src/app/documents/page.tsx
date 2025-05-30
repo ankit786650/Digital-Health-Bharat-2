@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"; // Added CardContent
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -11,6 +11,7 @@ import {
   FileText,
   MoreVertical,
   Upload,
+  StickyNote // Added StickyNote
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -21,13 +22,13 @@ const visitsData = [
       { id: "doc2", name: "Medication List", type: "Prescription", icon: FileText },
       { id: "doc3", name: "X-Ray Scan", type: "Imaging", icon: FileText },
     ], notes: [
-      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: FileText },
+      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote }, // Changed icon
     ] 
   },
   { id: "2", date: "2024-04-20", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
   { id: "3", date: "2024-03-05", doctorName: "Dr. Emily Carter", documents: [{id: "doc4", name: "Follow-up Report", type: "Lab Report", icon: FileText}], notes: [] },
   { id: "4", date: "2024-02-01", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
-  { id: "5", date: "2024-01-10", doctorName: "Dr. Emily Carter", documents: [], notes: [{id: "note2", name: "Initial Assessment", type: "Visit Summary", icon: FileText}] },
+  { id: "5", date: "2024-01-10", doctorName: "Dr. Emily Carter", documents: [], notes: [{id: "note2", name: "Initial Assessment", type: "Visit Summary", icon: StickyNote}] }, // Changed icon
 ];
 
 type DocumentItem = { id: string; name: string; type: string; icon: React.ElementType };
@@ -39,7 +40,9 @@ export default function DocumentsPage() {
   const selectedVisit = visitsData.find(v => v.id === selectedVisitId) || visitsData[0];
 
   return (
-    <div className="flex flex-1 w-full">
+    // The main AppShell now provides the overall flex structure (sidebar + main content)
+    // This component now represents the content within the <main> tag of AppShell
+    <div className="flex flex-1 w-full"> {/* This outer div acts as the two-column container for this specific page */}
       {/* Left Column: Document Navigation */}
       <div className="flex w-80 flex-col border-r border-border bg-card">
         <header className="border-b border-border p-4">
@@ -67,7 +70,7 @@ export default function DocumentsPage() {
                   key={visit.id}
                   onClick={() => setSelectedVisitId(visit.id)}
                   className={`flex items-center gap-4 w-full px-4 py-3.5 justify-between text-left transition-colors focus:outline-none focus-visible:bg-accent
-                    ${selectedVisitId === visit.id ? "bg-primary/10 border-r-2 border-primary" : "hover:bg-accent/50"}`}
+                    ${selectedVisitId === visit.id ? "bg-accent border-r-2 border-primary" : "hover:bg-accent/50"}`}
                 >
                   <div className="flex flex-col justify-center overflow-hidden">
                     <p className={`text-sm font-semibold leading-normal line-clamp-1 ${selectedVisitId === visit.id ? "text-primary" : "text-foreground"}`}>
@@ -91,7 +94,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Right Column: Selected Visit Details */}
-      <div className="flex flex-1 flex-col bg-background">
+      <div className="flex flex-1 flex-col bg-background"> {/* Ensured bg-background from theme */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-6 border-b border-border">
           <div className="flex flex-col gap-1">
             <h1 className="text-foreground text-2xl font-semibold leading-tight">
@@ -101,7 +104,7 @@ export default function DocumentsPage() {
               {selectedVisit.doctorName}
             </p>
           </div>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-bold leading-normal tracking-[0.015em]">
+          <Button className="text-sm font-bold leading-normal tracking-[0.015em]"> {/* Primary button styling will apply from theme */}
             <Upload className="mr-2 h-4 w-4" />
             Upload Document
           </Button>
@@ -114,16 +117,18 @@ export default function DocumentsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {selectedVisit.documents.map((doc) => (
                     <Card key={doc.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                      <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
-                        <doc.icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col justify-center overflow-hidden">
-                        <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{doc.name}</p>
-                        <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{doc.type}</p>
-                      </div>
-                      <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-foreground">
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
+                       <CardContent className="flex items-center gap-4 p-0 w-full"> {/* Use CardContent and remove its padding */}
+                        <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
+                          <doc.icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col justify-center overflow-hidden">
+                          <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{doc.name}</p>
+                          <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{doc.type}</p>
+                        </div>
+                        <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-foreground">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
@@ -136,17 +141,19 @@ export default function DocumentsPage() {
               {selectedVisit.notes.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {selectedVisit.notes.map((note) => (
-                    <Card key={note.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                      <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
-                        <note.icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col justify-center overflow-hidden">
-                        <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{note.name}</p>
-                        <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{note.type}</p>
-                      </div>
-                       <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-foreground">
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
+                     <Card key={note.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
+                       <CardContent className="flex items-center gap-4 p-0 w-full"> {/* Use CardContent and remove its padding */}
+                        <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
+                          <note.icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col justify-center overflow-hidden">
+                          <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{note.name}</p>
+                          <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{note.type}</p>
+                        </div>
+                         <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-foreground">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
