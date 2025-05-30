@@ -25,6 +25,11 @@ const recentDocuments = [
 export default function HomePage() {
   return (
     <div className="space-y-8">
+      {/* App Description */}
+      <p className="text-base text-muted-foreground text-center md:text-left">
+        Your personal assistant for managing health records, medication reminders, and tracking your health journey effectively.
+      </p>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Welcome back, Sophia</h1>
