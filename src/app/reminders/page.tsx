@@ -8,7 +8,7 @@ import { ReminderCard } from "@/components/reminders/ReminderCard";
 import type { MedicationReminder } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ListChecks, PlusCircle, BotMessageSquare } from "lucide-react";
+import { ListChecks, PlusCircle, BotMessageSquare, Pill } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Card, CardContent } from "@/components/ui/card";
 
 
 export default function RemindersPage() {
