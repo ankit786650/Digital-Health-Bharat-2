@@ -15,17 +15,18 @@ import {
   MapPin,
   User,
   LogOut,
-  Settings, // Ensure settings icon is imported if used directly
+  Settings, 
+  Activity, // Added Activity icon
   type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageToggle } from "@/components/language/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import React, { useState, useEffect } from "react"; // Added useState and useEffect
+import React, { useState, useEffect } from "react"; 
 
 interface NavItemConfig {
   href: string;
-  labelKey: import('@/locales/translations').TranslationKey;
+  labelKey: import('@/locales/translations').TranslationKey | 'monitor'; // Allow 'monitor' as a key
   icon: LucideIcon;
 }
 
@@ -34,6 +35,7 @@ const navItemConfigs: NavItemConfig[] = [
   { href: '/visits', labelKey: 'appointments', icon: CalendarDays },
   { href: '/reminders', labelKey: 'medicationReminder', icon: Pill },
   { href: '/documents', labelKey: 'medicalDocuments', icon: FileText },
+  { href: '/monitoring', labelKey: 'monitor' as any, icon: Activity }, // New monitor page
   { href: '/analytics', labelKey: 'analytics', icon: BarChart3 },
   { href: '/nearby-facility', labelKey: 'nearbyFacility', icon: MapPin },
   { href: '/profile', labelKey: 'profile', icon: User },
@@ -45,12 +47,25 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage(); // Added locale
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Helper to get label, fallback if key doesn't exist for current locale
+  const getLabel = (labelKey: NavItemConfig['labelKey']) => {
+    if (!mounted) {
+      // Convert to string for initial render if it's a known key
+      if (labelKey === 'monitor') return 'Monitor';
+      return labelKey.toString().charAt(0).toUpperCase() + labelKey.toString().slice(1);
+    }
+    if (labelKey === 'monitor') return 'Monitor'; // Directly return for 'monitor'
+    // Type assertion for other keys
+    return t(labelKey as import('@/locales/translations').TranslationKey);
+  };
+
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -60,7 +75,7 @@ export function AppShell({ children }: AppShellProps) {
             {mounted ? (
               <>
                 <AvatarImage src="https://placehold.co/40x40.png" alt={t('kishan')} data-ai-hint="man face" />
-                <AvatarFallback>{t('kishan').charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>{t('kishan', 'K').charAt(0).toUpperCase()}</AvatarFallback>
               </>
             ) : (
               <>
@@ -70,7 +85,7 @@ export function AppShell({ children }: AppShellProps) {
             )}
           </Avatar>
           {mounted ? (
-            <span className="font-semibold text-lg text-foreground">{t('kishan')}</span>
+            <span className="font-semibold text-lg text-foreground">{t('kishan', 'User')}</span>
           ) : (
             <span className="font-semibold text-lg text-foreground">User</span>
           )}
@@ -81,7 +96,7 @@ export function AppShell({ children }: AppShellProps) {
             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
             return (
               <Link
-                key={item.labelKey}
+                key={item.labelKey.toString()}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
@@ -91,7 +106,7 @@ export function AppShell({ children }: AppShellProps) {
                 )}
               >
                 <item.icon className={cn("h-5 w-5", isActive ? "text-accent-foreground" : "text-muted-foreground")} />
-                {mounted ? t(item.labelKey) : item.labelKey.toString()} 
+                {getLabel(item.labelKey)}
               </Link>
             );
           })}
@@ -111,12 +126,12 @@ export function AppShell({ children }: AppShellProps) {
                 {mounted ? t('settings') : 'Settings'}
               </Link>
           <Link
-            href="/logout"
+            href="#" // Changed from /logout to # to prevent navigation
             className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 w-full",
-                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground"
+                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" // Adjusted hover for destructive
             )}
-            onClick={(e) => { // Placeholder for logout logic, to prevent Next.js navigation error if /logout page doesn't exist
+            onClick={(e) => { 
               e.preventDefault();
               alert("Logout action (to be implemented)");
              }}
@@ -132,10 +147,12 @@ export function AppShell({ children }: AppShellProps) {
             <LanguageToggle />
             <ThemeToggle />
         </header>
-        <main className="flex-1 p-8 overflow-y-auto bg-background"> {/* Changed bg-secondary to bg-background */}
+        <main className="flex-1 p-8 overflow-y-auto bg-background"> 
             {children}
         </main>
       </div>
     </div>
   );
 }
+
+    

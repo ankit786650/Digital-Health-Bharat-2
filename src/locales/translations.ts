@@ -16,6 +16,7 @@ export const translations = {
     profile: 'Profile',
     settings: 'Settings',
     logOut: 'Log Out',
+    monitor: 'Monitor', // Added monitor
     // HomePage
     welcomeBack: 'Welcome back, Kishan',
     welcomeMessage: 'Your personal assistant for managing health records, medication reminders, and tracking your health journey effectively.',
@@ -42,6 +43,7 @@ export const translations = {
     profile: 'प्रोफ़ाइल',
     settings: 'समायोजन',
     logOut: 'लॉग आउट',
+    monitor: 'निगरानी', // Added monitor in Hindi
     // HomePage
     welcomeBack: 'वापस स्वागत है, किशन',
     welcomeMessage: 'स्वास्थ्य रिकॉर्ड, दवा अनुस्मारक, और आपकी स्वास्थ्य यात्रा को प्रभावी ढंग से ट्रैक करने के लिए आपका व्यक्तिगत सहायक।',
@@ -55,4 +57,9 @@ export const translations = {
 };
 
 export type Locale = keyof typeof translations;
-export type TranslationKey = keyof typeof translations['en']; // Assuming 'en' has all keys
+// Add 'monitor' to TranslationKey if it should be a standard translatable key
+// For now, AppShell handles 'monitor' specially if not in translations['en']
+export type TranslationKey = keyof typeof translations['en'];
+
+
+    
