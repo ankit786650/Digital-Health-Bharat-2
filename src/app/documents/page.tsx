@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card"; 
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -11,9 +11,10 @@ import {
   FileText,
   MoreVertical,
   Upload,
-  StickyNote 
+  StickyNote
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 // Mock data, replace with actual data fetching
 const visitsData = [
@@ -22,13 +23,13 @@ const visitsData = [
       { id: "doc2", name: "Medication List", type: "Prescription", icon: FileText },
       { id: "doc3", name: "X-Ray Scan", type: "Imaging", icon: FileText },
     ], notes: [
-      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote }, 
-    ] 
+      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote },
+    ]
   },
   { id: "2", date: "2024-04-20", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
   { id: "3", date: "2024-03-05", doctorName: "Dr. Emily Carter", documents: [{id: "doc4", name: "Follow-up Report", type: "Lab Report", icon: FileText}], notes: [] },
   { id: "4", date: "2024-02-01", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
-  { id: "5", date: "2024-01-10", doctorName: "Dr. Emily Carter", documents: [], notes: [{id: "note2", name: "Initial Assessment", type: "Visit Summary", icon: StickyNote}] }, 
+  { id: "5", date: "2024-01-10", doctorName: "Dr. Emily Carter", documents: [], notes: [{id: "note2", name: "Initial Assessment", type: "Visit Summary", icon: StickyNote}] },
 ];
 
 type DocumentItem = { id: string; name: string; type: string; icon: React.ElementType };
@@ -37,6 +38,8 @@ type VisitItem = { id: string; date: string; doctorName: string; documents: Docu
 
 export default function DocumentsPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(visitsData.length > 0 ? visitsData[0].id : null);
+  const fileInputRef = useRef<HTMLInputElement>(null); // Added ref for file input
+  const { toast } = useToast(); // Added toast hook
 
   const selectedVisit = visitsData.find(v => v.id === selectedVisitId);
 
@@ -44,24 +47,41 @@ export default function DocumentsPage() {
     setSelectedVisitId(visitId);
   };
 
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click(); // Trigger click on hidden file input
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Here you would typically handle the file upload process (e.g., send to a server)
+      // For now, we'll just show a toast message.
+      toast({
+        title: "File Selected",
+        description: `"${file.name}" has been selected. Actual upload functionality is not yet implemented.`,
+      });
+      // Reset the file input value if needed, so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
-    // The main AppShell now provides the overall flex structure (header + main content)
-    // This component now represents the content within the <main> tag of AppShell
-    <div className="flex flex-1 w-full"> {/* This outer div acts as the two-column container for this specific page */}
-      {/* Left Column: Document Navigation */}
-      <div className="flex w-80 flex-col border-r border-border bg-card"> {/* bg-card from theme (white) */}
+    <div className="flex flex-1 w-full">
+      <div className="flex w-80 flex-col border-r border-border bg-card">
         <header className="border-b border-border p-4">
           <h2 className="text-slate-900 text-xl font-semibold leading-tight">Documents</h2>
         </header>
         <Tabs defaultValue="visits" className="flex flex-col flex-1">
           <TabsList className="grid w-full grid-cols-2 rounded-none border-b border-border bg-card px-2 h-auto py-0">
-            <TabsTrigger 
-              value="visits" 
+            <TabsTrigger
+              value="visits"
               className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-slate-900 data-[state=inactive]:text-slate-500 hover:data-[state=inactive]:border-slate-300 hover:data-[state=inactive]:text-slate-700 py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
             >
               Visits
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="categories"
               className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-slate-900 data-[state=inactive]:text-slate-500 hover:data-[state=inactive]:border-slate-300 hover:data-[state=inactive]:text-slate-700 py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
             >
@@ -98,8 +118,7 @@ export default function DocumentsPage() {
         </Tabs>
       </div>
 
-      {/* Right Column: Selected Visit Details */}
-      <div className="flex flex-1 flex-col bg-background"> {/* bg-background (slate-50/slate-100 from theme) */}
+      <div className="flex flex-1 flex-col bg-background">
         {selectedVisit ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-4 p-6 border-b border-border">
@@ -111,7 +130,17 @@ export default function DocumentsPage() {
                   {selectedVisit.doctorName}
                 </p>
               </div>
-              <Button className="text-sm font-bold leading-normal tracking-[0.015em] bg-primary text-primary-foreground hover:bg-primary/90"> {/* Primary button styling will apply from theme */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".pdf,.png,.jpg,.jpeg" // Define accepted file types
+              />
+              <Button
+                onClick={handleUploadButtonClick} // Added onClick handler
+                className="text-sm font-bold leading-normal tracking-[0.015em] bg-primary text-primary-foreground hover:bg-primary/90"
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Document
               </Button>
@@ -124,7 +153,7 @@ export default function DocumentsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {selectedVisit.documents.map((doc) => (
                         <Card key={doc.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                           <CardContent className="flex items-center gap-4 p-0 w-full"> {/* Use CardContent and remove its padding */}
+                           <CardContent className="flex items-center gap-4 p-0 w-full">
                             <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
                               <doc.icon className="h-5 w-5" />
                             </div>
@@ -149,7 +178,7 @@ export default function DocumentsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {selectedVisit.notes.map((note) => (
                          <Card key={note.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                           <CardContent className="flex items-center gap-4 p-0 w-full"> {/* Use CardContent and remove its padding */}
+                           <CardContent className="flex items-center gap-4 p-0 w-full">
                             <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
                               <note.icon className="h-5 w-5" />
                             </div>
