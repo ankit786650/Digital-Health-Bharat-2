@@ -6,11 +6,13 @@ import type { Facility, FacilityType } from "@/lib/types";
 import { FacilityCard } from "@/components/nearby-facility/FacilityCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MapPinned, Search, LocateFixed, SlidersHorizontal, AlertCircle, Package } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MapPinned, Search, LocateFixed, SlidersHorizontal, AlertCircle, Package, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const allFacilityTypes: FacilityType[] = [
   "Government Hospital",
@@ -27,104 +29,85 @@ const mockFacilities: Facility[] = [
     id: "1",
     name: "City General Hospital",
     type: "Government Hospital",
-    address: "123 Main St, Anytown, CA 90210",
+    address: "123 Main St, Anytown, USA 12345",
     phone: "(555) 123-4567",
-    hours: "Open 24 hours",
+    hours: "Mon-Fri 9 AM - 5 PM",
     distance: "1.2 km",
     lat: 34.0522,
     lng: -118.2437,
-    services: ["Emergency", "OPD", "Surgery", "Pediatrics"],
-    website: "citygeneral.example.com",
-    imageUrl: "https://placehold.co/600x400.png?text=City+General+Hospital",
   },
   {
     id: "2",
     name: "Community Health Clinic (PHC)",
     type: "PHC",
-    address: "456 Oak Ave, Anytown, CA 90211",
+    address: "456 Oak Avenue, Anytown, USA 12345",
     phone: "(555) 987-6543",
-    hours: "Mon-Fri 9 AM - 5 PM",
+    hours: "Mon-Sat 8 AM - 6 PM",
     distance: "3.5 km",
     lat: 34.0550,
     lng: -118.2500,
-    services: ["General Checkups", "Vaccinations", "Minor Illnesses"],
-    imageUrl: "https://placehold.co/600x400.png?text=Community+Clinic",
   },
   {
     id: "3",
     name: "Wellness Private Hospital",
     type: "Private Hospital",
-    address: "789 Pine Ln, Anytown, CA 90212",
+    address: "789 Pine Ln, Anytown, USA 12345",
     phone: "(555) 234-5678",
     hours: "Open 24 hours",
     distance: "2.1 km",
     lat: 34.0600,
     lng: -118.2450,
-    services: ["Specialist Consultations", "Advanced Diagnostics", "Luxury Wards"],
-    website: "wellnessprivate.example.com",
-    imageUrl: "https://placehold.co/600x400.png?text=Wellness+Private",
   },
   {
     id: "4",
     name: "Jan Aushadhi Kendra - Elm St",
     type: "Jan Aushadhi Kendra",
-    address: "101 Elm St, Anytown, CA 90210",
+    address: "101 Elm St, Anytown, USA 12345",
     phone: "(555) 345-6789",
     hours: "Mon-Sat 10 AM - 6 PM",
     distance: "0.8 km",
     lat: 34.0510,
     lng: -118.2400,
-    services: ["Affordable Generic Medicines"],
-    imageUrl: "https://placehold.co/600x400.png?text=Jan+Aushadhi",
   },
   {
     id: "5",
     name: "QuickScan Diagnostic Lab",
     type: "Diagnostic Lab",
-    address: "202 Maple Dr, Anytown, CA 90213",
+    address: "202 Maple Dr, Anytown, USA 12345",
     phone: "(555) 456-7890",
     hours: "Mon-Sun 7 AM - 7 PM",
     distance: "4.0 km",
     lat: 34.0650,
     lng: -118.2550,
-    services: ["Blood Tests", "X-Rays", "MRI", "Ultrasound"],
-    website: "quickscanlabs.example.com",
-    imageUrl: "https://placehold.co/600x400.png?text=QuickScan+Lab",
   },
   {
     id: "6",
     name: "HealthFirst Pharmacy",
     type: "Pharmacy",
-    address: "303 Birch Rd, Anytown, CA 90210",
+    address: "303 Birch Rd, Anytown, USA 12345",
     phone: "(555) 567-8901",
     hours: "Open 24 hours",
     distance: "1.5 km",
     lat: 34.0530,
     lng: -118.2420,
-    services: ["Prescription Drugs", "OTC Medicines", "Health Products"],
-    imageUrl: "https://placehold.co/600x400.png?text=HealthFirst+Pharmacy",
   },
   {
     id: "7",
     name: "Dr. Smith's Family Clinic",
     type: "Clinic",
-    address: "55 Cedar Ave, Anytown, CA 90214",
+    address: "55 Cedar Ave, Anytown, USA 12345",
     phone: "(555) 678-1234",
     hours: "Mon, Wed, Fri 8AM - 4PM",
     distance: "2.8 km",
     lat: 34.0580,
     lng: -118.2390,
-    services: ["General Practice", "Pediatrics", "Annual Physicals"],
-    website: "drsmithclinic.example.com",
-    imageUrl: "https://placehold.co/600x400.png?text=Dr.+Smith's+Clinic",
   },
 ];
 
 
 export default function NearbyFacilityPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<FacilityType | "all">("all");
-  const [displayedFacilities, setDisplayedFacilities] = useState<Facility[]>(mockFacilities);
+  const [selectedTypes, setSelectedTypes] = useState<FacilityType[]>([]);
   const { toast } = useToast();
 
   const handleUseCurrentLocation = () => {
@@ -132,7 +115,14 @@ export default function NearbyFacilityPage() {
       title: "Feature Coming Soon",
       description: "Automatic location detection will be implemented in a future update.",
     });
-    // In a real app, you would use navigator.geolocation here
+  };
+
+  const handleTypeChange = (type: FacilityType) => {
+    setSelectedTypes((prevTypes) =>
+      prevTypes.includes(type)
+        ? prevTypes.filter((t) => t !== type)
+        : [...prevTypes, type]
+    );
   };
 
   const filteredFacilities = useMemo(() => {
@@ -141,112 +131,108 @@ export default function NearbyFacilityPage() {
         facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (facility.services && facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase())));
-      const matchesType = selectedType === "all" || facility.type === selectedType;
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(facility.type);
       return matchesSearchTerm && matchesType;
     });
-  }, [searchTerm, selectedType]);
-
-  useEffect(() => {
-    setDisplayedFacilities(filteredFacilities);
-  }, [filteredFacilities]);
-  
-  // Add unique keys to facility images by appending id
-  const facilitiesWithImageKeys = displayedFacilities.map(facility => ({
-    ...facility,
-    imageUrl: facility.imageUrl ? `${facility.imageUrl}&facility_id=${facility.id}` : `https://placehold.co/600x400.png?text=${encodeURIComponent(facility.name)}&facility_id=${facility.id}`
-  }));
-
+  }, [searchTerm, selectedTypes]);
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div className="flex items-center gap-3">
-          <MapPinned className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Nearby Medical Facilities</h1>
-        </div>
-        <p className="text-muted-foreground text-sm sm:text-right max-w-md">
-          Find hospitals, clinics, pharmacies, and labs near you. Use filters to narrow your search.
-        </p>
-      </div>
+    <div className="container mx-auto py-8 px-4 md:px-6">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Column */}
+        <div className="lg:w-2/3 space-y-6">
+          {/* Location Detection */}
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mb-3">Location Detection</h2>
+            <div className="flex flex-col sm:flex-row items-center gap-3 mb-4">
+              <Button onClick={handleUseCurrentLocation} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
+                <LocateFixed className="mr-2 h-4 w-4" /> Use My Current Location
+              </Button>
+              <span className="text-muted-foreground">or</span>
+              <div className="relative w-full sm:flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Enter Address or PIN Code"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 w-full"
+                />
+              </div>
+            </div>
+            <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700">
+              <Info className="h-5 w-5 text-blue-500" />
+              <AlertTitle className="font-medium text-blue-800">Location Permissions</AlertTitle>
+              <AlertDescription className="text-blue-700">
+                We need your permission to access your location. If denied, you can manually enter your location or use a PIN code. <a href="#" className="font-semibold hover:underline">Learn more.</a>
+              </AlertDescription>
+            </Alert>
+          </section>
 
-      {/* Search and Filter Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end p-4 border rounded-lg bg-card shadow">
-        <div className="md:col-span-1 space-y-1.5">
-          <Label htmlFor="search-facility" className="text-sm font-medium">Search by Name, Address, PIN</Label>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search-facility"
-              type="text"
-              placeholder="e.g., City Hospital or 90210"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="facility-type" className="text-sm font-medium">Filter by Type</Label>
-          <Select value={selectedType} onValueChange={(value) => setSelectedType(value as FacilityType | "all")}>
-            <SelectTrigger id="facility-type">
-              <SelectValue placeholder="All Facility Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Facility Types</SelectItem>
+          {/* Filter by Facility Type */}
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mb-3">Filter by Facility Type <span className="text-sm text-muted-foreground">(within 5km)</span></h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {allFacilityTypes.map((type) => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <div key={type} 
+                     className={cn(
+                        "flex items-center space-x-2 border border-border rounded-md p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
+                        selectedTypes.includes(type) && "bg-primary/10 border-primary text-primary ring-1 ring-primary"
+                     )}
+                     onClick={() => handleTypeChange(type)}
+                >
+                  <Checkbox
+                    id={`type-${type.replace(/\s+/g, '-')}`}
+                    checked={selectedTypes.includes(type)}
+                    onCheckedChange={() => handleTypeChange(type)}
+                    className={cn(selectedTypes.includes(type) ? "border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground")}
+                  />
+                  <Label htmlFor={`type-${type.replace(/\s+/g, '-')}`} className="font-medium text-sm cursor-pointer select-none">
+                    {type}
+                  </Label>
+                </div>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button onClick={handleUseCurrentLocation} variant="outline" className="w-full md:w-auto">
-          <LocateFixed className="mr-2 h-4 w-4" /> Use Current Location
-        </Button>
-      </div>
+            </div>
+          </section>
 
-      {/* Map Placeholder Section */}
-      <div className="bg-card p-4 rounded-lg shadow border">
-        <h2 className="text-xl font-semibold text-foreground mb-3 flex items-center gap-2">
-          <MapPinned className="h-5 w-5 text-primary" />
-          Facility Map View
-        </h2>
-        <div className="aspect-[16/7] bg-muted rounded overflow-hidden relative">
-          <Image
-            src="https://placehold.co/1200x525.png"
+          {/* Facility Listings */}
+          <section>
+             <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground">
+                    {filteredFacilities.length > 0 ? `Found ${filteredFacilities.length} Facilities` : "Facilities"}
+                </h2>
+                {/* Optional: Sort or additional filter controls can go here */}
+            </div>
+            {filteredFacilities.length > 0 ? (
+              <div className="space-y-4">
+                {filteredFacilities.map((facility) => (
+                  <FacilityCard key={facility.id} facility={facility} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border rounded-lg bg-card shadow-sm">
+                <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-semibold text-foreground">No Facilities Found</p>
+                <p className="text-muted-foreground mt-1">
+                  Try adjusting your search term or filters.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Right Column - Map */}
+        <div className="lg:w-1/3 lg:sticky lg:top-24 h-[calc(100vh-10rem)]  min-h-[300px] rounded-lg overflow-hidden shadow-lg border">
+           <Image
+            src="https://placehold.co/600x800.png?text=Simple+Map+View"
             alt="Map placeholder showing facility locations"
-            fill
-            style={{objectFit: "cover"}}
-            data-ai-hint="map city locations"
+            width={600}
+            height={800}
+            className="object-cover w-full h-full bg-muted"
+            data-ai-hint="map locations"
             priority
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-            <p className="text-white text-lg font-medium bg-black/50 px-4 py-2 rounded">Map View Coming Soon</p>
-          </div>
         </div>
-      </div>
-      
-      {/* Facility Listings */}
-      <div>
-        <h2 className="text-2xl font-semibold text-foreground mb-6 flex items-center gap-2">
-          <SlidersHorizontal className="h-6 w-6 text-primary"/>
-          Found {facilitiesWithImageKeys.length} Facilities
-        </h2>
-        {facilitiesWithImageKeys.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {facilitiesWithImageKeys.map((facility) => (
-              <FacilityCard key={facility.id} facility={facility} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-10 bg-card rounded-lg shadow border">
-            <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-xl font-semibold text-foreground">No Facilities Found</p>
-            <p className="text-muted-foreground mt-1">
-              Try adjusting your search term or filters.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
