@@ -105,18 +105,18 @@ export default function AnalyticsPage() {
 
   const CalendarView = ({ data }: { data: CalendarMonthData }) => (
     <Card className="w-full shadow-lg">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-4">
+      <CardHeader className="flex flex-row items-center justify-between px-4 pt-4 pb-3">
         <Button variant="ghost" size="icon-sm" aria-label="Previous month">
           <ChevronLeft className="h-5 w-5" />
         </Button>
-        <CardTitle className="text-base font-semibold text-center">
+        <CardTitle className="text-lg font-semibold text-center">
           {data.name} {data.year}
         </CardTitle>
         <Button variant="ghost" size="icon-sm" aria-label="Next month">
           <ChevronRight className="h-5 w-5" />
         </Button>
       </CardHeader>
-      <CardContent className="px-4 pb-3">
+      <CardContent className="p-4">
         <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-2">
           {data.dayLabels.map((label) => (
             <div key={label}>{label}</div>
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
 
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-10">
+    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
       <div className="flex items-center gap-3 mb-2">
         <h1 className="text-3xl font-bold text-foreground">Medication Adherence</h1>
       </div>
@@ -171,12 +171,12 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {adherenceScores.map(({ title, score, Icon, color }) => (
             <Card key={title} className="text-center shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="px-4 pt-4 pb-2">
                 <CardTitle className="text-base font-medium text-muted-foreground">{title}</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center gap-2">
+              <CardContent className="flex flex-col items-center justify-center gap-3">
                 <p className={`text-5xl font-bold ${color}`}>{score}%</p>
-                <Icon className={`h-10 w-10 ${color}`} strokeWidth={1.5} />
+                <Icon className={`h-8 w-8 ${color}`} strokeWidth={1.5} />
               </CardContent>
             </Card>
           ))}
@@ -189,11 +189,11 @@ export default function AnalyticsPage() {
         <Card className="shadow-lg overflow-hidden">
             <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
                 <div className="flex-shrink-0 text-red-500">
-                    <AlertTriangle className="h-8 w-8" />
+                    <AlertTriangle className="h-10 w-10" />
                 </div>
                 <div className="flex-grow">
                     <h3 className="text-lg font-semibold text-foreground mb-1">Missed Doses Alert</h3>
-                    <p className="text-muted-foreground text-sm mb-3">
+                    <p className="text-muted-foreground text-sm mb-3 leading-relaxed">
                         You’ve missed 3 doses this week. Taking your medication consistently is important for managing your health. Need help remembering or have questions?
                     </p>
                     <Button 
@@ -219,3 +219,4 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+
