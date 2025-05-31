@@ -52,46 +52,73 @@ export default function HomePage() {
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upcoming Medications (col-span-2) */}
-        <section className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">{t('upcomingMedications')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingMedications.map((med) => (
-                <div key={med.name} className="flex items-center justify-between p-3 bg-card rounded-lg border hover:shadow-sm transition-shadow">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-primary/10 text-primary p-2.5 rounded-full">
-                      <med.icon className="h-5 w-5" />
+        {/* Main Content Area (Upcoming Medications & Health Program Alerts) */}
+        <div className="lg:col-span-2 space-y-6">
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">{t('upcomingMedications')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {upcomingMedications.map((med) => (
+                  <div key={med.name} className="flex items-center justify-between p-3 bg-card rounded-lg border hover:shadow-sm transition-shadow">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-primary/10 text-primary p-2.5 rounded-full">
+                        <med.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-card-foreground">{med.name}</p>
+                        <p className="text-xs text-muted-foreground">{med.time}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon-sm" 
+                      className="text-muted-foreground"
+                      onClick={() => handleMoreOptionsClick(med.name)}
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ))}
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/reminders">{t('viewAllMedications')}</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          </section>
+
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">{t('healthProgramAlerts')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {healthProgramAlerts.map((alert) => (
+                  <div key={alert.title} className="flex items-center gap-3">
+                     <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
+                      <alert.icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-card-foreground">{med.name}</p>
-                      <p className="text-xs text-muted-foreground">{med.time}</p>
+                      <p className="text-sm font-medium text-card-foreground">{alert.title}</p>
+                      <p className="text-xs text-muted-foreground">{alert.details}</p>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon-sm" 
-                    className="text-muted-foreground"
-                    onClick={() => handleMoreOptionsClick(med.name)}
-                  >
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/reminders">{t('viewAllMedications')}</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </section>
+                ))}
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/programs">{t('viewAllPrograms')}</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          </section>
+        </div>
 
-        {/* Right Sidebar (Recent Appointments, Documents, Health Program Alerts) */}
+        {/* Right Sidebar (Recent Appointments, Documents) */}
         <aside className="space-y-6">
-          {/* Recent Appointments */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">{t('recentAppointments')}</CardTitle>
@@ -116,7 +143,6 @@ export default function HomePage() {
             </CardFooter>
           </Card>
 
-          {/* Documents */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">{t('documents')}</CardTitle>
@@ -137,31 +163,6 @@ export default function HomePage() {
             <CardFooter>
               <Button variant="outline" className="w-full" asChild>
                 <Link href="/documents">{t('viewAllDocuments')}</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Health Program Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">{t('healthProgramAlerts')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {healthProgramAlerts.map((alert) => (
-                <div key={alert.title} className="flex items-center gap-3">
-                   <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
-                    <alert.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-card-foreground">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground">{alert.details}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/programs">{t('viewAllPrograms')}</Link>
               </Button>
             </CardFooter>
           </Card>
