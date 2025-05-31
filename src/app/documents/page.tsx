@@ -49,12 +49,23 @@ type DocumentItem = {
 
 const transformInitialData = (rawData: typeof initialVisitsDataRaw): DocumentItem[] => {
   const documents: DocumentItem[] = [];
+  const currentYear = new Date().getFullYear();
+
   rawData.forEach(visit => {
+    // Adjust visit date year
+    const visitDateParts = visit.date.split('-'); // ["YYYY", "MM", "DD"]
+    const adjustedVisitDate = `${currentYear}-${visitDateParts[1]}-${visitDateParts[2]}`;
+
     visit.documents.forEach(doc => {
+      // Adjust document date year
+      const docDateParts = doc.documentDate.split('-');
+      const adjustedDocDate = `${currentYear}-${docDateParts[1]}-${docDateParts[2]}`;
+      
       documents.push({
         ...doc,
+        documentDate: adjustedDocDate, // Use adjusted date
         doctorName: doc.doctorName || visit.doctorName,
-        originalVisitDate: visit.date,
+        originalVisitDate: adjustedVisitDate, // Store adjusted original visit date
       });
     });
     // Notes are being excluded as per the new design focusing on documents
@@ -180,3 +191,4 @@ export default function DocumentsPage() {
     </div>
   );
 }
+
