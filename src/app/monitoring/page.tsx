@@ -27,9 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PenLine, Save, Smile, Meh, Frown, AlertCircle, BellRing, LineChart, Pill as PillIcon } from "lucide-react";
+import { PenLine, Save, Smile, Meh, Frown, AlertCircle, BellRing, LineChart, Pill as PillIcon, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 const feelingEmojis = ["😄", "😊", "😐", "😟", "😞"];
 const medicationEmojis = ["👍", "🙂", "😐", "🙁", "👎"];
@@ -40,12 +41,13 @@ const mockMedications = [
   { id: "med3", name: "Metformin (1000mg)" },
 ];
 
-const recentActivities = [
-  { date: "Oct 26, 2023", type: "Symptom Log", details: "Mild headache, tired", feeling: "😟" },
-  { date: "Oct 26, 2023", type: "Medication Correlation", details: "Lisinopril (20mg)", feeling: "😐" },
-  { date: "Oct 25, 2023", type: "Symptom Log", details: "Feeling good overall", feeling: "😄" },
-  { date: "Oct 24, 2023", type: "Symptom Log", details: "Nausea after lunch", feeling: "😞" },
-];
+interface ActivityItem {
+  id: string;
+  date: string; // ISO string
+  type: "Symptom Log" | "Medication Correlation";
+  details: string;
+  moodEmoji: string;
+}
 
 export default function MedicineSideEffectsMonitorPage() {
   const { toast } = useToast();
@@ -57,6 +59,8 @@ export default function MedicineSideEffectsMonitorPage() {
   const [symptomAlertsEnabled, setSymptomAlertsEnabled] = useState(true);
   const [medicationRemindersEnabled, setMedicationRemindersEnabled] = useState(false);
 
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+
   const handleLogSymptom = () => {
     if (!selectedFeeling) {
       toast({ title: "Feeling not selected", description: "Please select how you are feeling.", variant: "destructive" });
@@ -66,6 +70,16 @@ export default function MedicineSideEffectsMonitorPage() {
       toast({ title: "Description empty", description: "Please describe your symptoms.", variant: "destructive" });
       return;
     }
+    
+    const newActivity: ActivityItem = {
+      id: `activity-${Date.now()}`,
+      date: new Date().toISOString(),
+      type: "Symptom Log",
+      details: symptomDescription,
+      moodEmoji: selectedFeeling,
+    };
+    setActivities(prevActivities => [newActivity, ...prevActivities]);
+
     toast({
       title: "Symptom Logged",
       description: `Feeling: ${selectedFeeling}, Description: ${symptomDescription}`,
@@ -84,9 +98,20 @@ export default function MedicineSideEffectsMonitorPage() {
       toast({ title: "Experience not rated", description: "Please rate your experience with the medication.", variant: "destructive" });
       return;
     }
+
+    const medicationName = mockMedications.find(m => m.id === selectedMedication)?.name || "Unknown Medication";
+    const newActivity: ActivityItem = {
+      id: `activity-${Date.now()}`,
+      date: new Date().toISOString(),
+      type: "Medication Correlation",
+      details: medicationName,
+      moodEmoji: medicationExperience,
+    };
+    setActivities(prevActivities => [newActivity, ...prevActivities]);
+
     toast({
       title: "Correlation Saved",
-      description: `Medication: ${mockMedications.find(m=>m.id === selectedMedication)?.name}, Experience: ${medicationExperience}`,
+      description: `Medication: ${medicationName}, Experience: ${medicationExperience}`,
     });
      // Reset form
     setSelectedMedication("");
@@ -272,23 +297,27 @@ export default function MedicineSideEffectsMonitorPage() {
                 <TableHead>DATE</TableHead>
                 <TableHead>TYPE</TableHead>
                 <TableHead>DETAILS</TableHead>
-                <TableHead className="text-right">FEELING</TableHead>
+                <TableHead className="text-right">FEELING/RATING</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentActivities.length > 0 ? (
-                recentActivities.map((activity, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{activity.date}</TableCell>
+              {activities.length > 0 ? (
+                activities.map((activity) => (
+                  <TableRow key={activity.id}>
+                    <TableCell className="font-medium">{format(new Date(activity.date), "MMM d, yyyy - HH:mm")}</TableCell>
                     <TableCell>{activity.type}</TableCell>
                     <TableCell>{activity.details}</TableCell>
-                    <TableCell className="text-right text-xl">{activity.feeling}</TableCell>
+                    <TableCell className="text-right text-xl">{activity.moodEmoji}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                    No recent activity.
+                    <div className="flex flex-col items-center gap-2">
+                      <Package className="h-10 w-10" />
+                      <span>No recent activity.</span>
+                      <span className="text-xs">Log your symptoms or medication experiences above.</span>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -299,3 +328,4 @@ export default function MedicineSideEffectsMonitorPage() {
     </div>
   );
 }
+
