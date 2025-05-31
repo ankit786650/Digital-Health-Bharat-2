@@ -62,9 +62,10 @@ interface UploadDocumentDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onSubmitDocument: (data: DocumentUploadFormValues) => void;
   selectedVisitDate?: string;
+  userName?: string;
 }
 
-export function UploadDocumentDialog({ isOpen, onOpenChange, onSubmitDocument, selectedVisitDate }: UploadDocumentDialogProps) {
+export function UploadDocumentDialog({ isOpen, onOpenChange, onSubmitDocument, selectedVisitDate, userName }: UploadDocumentDialogProps) {
   const { toast } = useToast();
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -107,7 +108,7 @@ export function UploadDocumentDialog({ isOpen, onOpenChange, onSubmitDocument, s
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Upload Document Metadata</DialogTitle>
+          <DialogTitle>Hi {userName || 'User'}, please fill it</DialogTitle>
           <DialogDescription>
             Provide details for the document you are uploading {selectedVisitDate ? `for visit on ${selectedVisitDate}`: ''}.
             Accepted formats: JPG, PDF, PNG (max 10MB).
@@ -269,3 +270,5 @@ export function UploadDocumentDialog({ isOpen, onOpenChange, onSubmitDocument, s
     </Dialog>
   );
 }
+
+    

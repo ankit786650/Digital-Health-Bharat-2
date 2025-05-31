@@ -20,6 +20,8 @@ import {
 import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { UploadDocumentDialog, type DocumentUploadFormValues } from "@/components/documents/UploadDocumentDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 // Initial mock data
 const initialVisitsData = [
@@ -60,6 +62,7 @@ export default function DocumentsPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(initialVisitsData.length > 0 ? initialVisitsData[0].id : null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Effect to select the first visit if visits data changes and none is selected
   useEffect(() => {
@@ -139,6 +142,7 @@ export default function DocumentsPage() {
         onOpenChange={setShowUploadDialog}
         onSubmitDocument={handleDocumentUploadSubmit}
         selectedVisitDate={selectedVisit ? format(parseISO(selectedVisit.date), "MMMM d, yyyy") : undefined}
+        userName={t('kishan')}
       />
 
       <div className="flex w-80 flex-col border-r border-border bg-card">
@@ -280,3 +284,5 @@ export default function DocumentsPage() {
     </div>
   );
 }
+
+    
