@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"; // CardHeader, CardTitle removed as not directly used for doc list header
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -12,61 +12,135 @@ import {
   MoreVertical,
   Upload,
   StickyNote,
-  Archive
+  Archive,
+  // For mapping doc types to icons
+  Image as ImageIcon, // Example, can refine
+  ShieldCheck,     // Example for Vaccination
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { UploadDocumentDialog, type DocumentUploadFormValues } from "@/components/documents/UploadDocumentDialog";
 
-// Mock data, replace with actual data fetching
-const visitsData = [
+// Initial mock data
+const initialVisitsData = [
   { id: "1", date: "2024-05-15", doctorName: "Dr. Emily Carter", documents: [
-      { id: "doc1", name: "Blood Test Results", type: "Lab Report", icon: FileText },
-      { id: "doc2", name: "Medication List", type: "Prescription", icon: FileText },
-      { id: "doc3", name: "X-Ray Scan", type: "Imaging", icon: FileText },
+      { id: "doc1", name: "Blood Test Results", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
+      { id: "doc2", name: "Medication List", type: "Prescription", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
+      { id: "doc3", name: "X-Ray Scan", type: "Imaging", icon: ImageIcon, originalFile: null, documentDate: "2024-05-15" },
     ], notes: [
-      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote },
+      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote, originalFile: null, documentDate: "2024-05-15" },
     ]
   },
-  { id: "2", date: "2024-04-20", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
-  { id: "3", date: "2024-03-05", doctorName: "Dr. Emily Carter", documents: [{id: "doc4", name: "Follow-up Report", type: "Lab Report", icon: FileText}], notes: [] },
-  { id: "4", date: "2024-02-01", doctorName: "Dr. Emily Carter", documents: [], notes: [] },
-  { id: "5", date: "2024-01-10", doctorName: "Dr. Emily Carter", documents: [], notes: [{id: "note2", name: "Initial Assessment", type: "Visit Summary", icon: StickyNote}] },
+  { id: "2", date: "2024-04-20", doctorName: "Dr. John Doe", documents: [], notes: [] },
+  { id: "3", date: "2024-03-05", doctorName: "Dr. Alice Smith", documents: [{id: "doc4", name: "Follow-up Report", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-03-05"}], notes: [] },
 ];
 
-type DocumentItem = { id: string; name: string; type: string; icon: React.ElementType };
-type VisitItem = { id: string; date: string; doctorName: string; documents: DocumentItem[]; notes: DocumentItem[] };
+type DocumentOrNoteItem = { 
+  id: string; 
+  name: string; 
+  type: string; 
+  icon: React.ElementType;
+  originalFile: File | null; // Store the original File object
+  documentDate: string; // Date of the document itself
+  doctorName?: string;
+  visitReason?: string;
+};
+
+type VisitItem = { 
+  id: string; 
+  date: string; 
+  doctorName: string; 
+  documents: DocumentOrNoteItem[]; 
+  notes: DocumentOrNoteItem[]; 
+};
 
 
 export default function DocumentsPage() {
-  const [selectedVisitId, setSelectedVisitId] = useState<string | null>(visitsData.length > 0 ? visitsData[0].id : null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [visits, setVisits] = useState<VisitItem[]>(initialVisitsData);
+  const [selectedVisitId, setSelectedVisitId] = useState<string | null>(initialVisitsData.length > 0 ? initialVisitsData[0].id : null);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   const { toast } = useToast();
 
-  const selectedVisit = visitsData.find(v => v.id === selectedVisitId);
+  // Effect to select the first visit if visits data changes and none is selected
+  useEffect(() => {
+    if (visits.length > 0 && !selectedVisitId) {
+      setSelectedVisitId(visits[0].id);
+    }
+  }, [visits, selectedVisitId]);
+
+
+  const selectedVisit = visits.find(v => v.id === selectedVisitId);
 
   const handleVisitSelect = (visitId: string) => {
     setSelectedVisitId(visitId);
   };
 
-  const handleUploadButtonClick = () => {
-    fileInputRef.current?.click();
+  const mapDocumentTypeToIcon = (docType: string): React.ElementType => {
+    switch(docType) {
+      case "lab_report": return FileText;
+      case "prescription": return FileText; // Could use Pill icon from lucide-react if desired
+      case "medical_imaging": return ImageIcon;
+      case "consultation_notes": return StickyNote;
+      case "discharge_summary": return FileText;
+      case "vaccination_document": return ShieldCheck;
+      case "insurance_document": return FileText; // Could use Shield icon
+      default: return FileText;
+    }
+  }
+
+  const handleDocumentUploadSubmit = (data: DocumentUploadFormValues) => {
+    if (!selectedVisitId) {
+      toast({
+        title: "No Visit Selected",
+        description: "Please select a visit to add this document to.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newDocument: DocumentOrNoteItem = {
+      id: `doc-${Date.now()}`,
+      name: data.documentTitle,
+      type: data.documentType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format type string
+      icon: mapDocumentTypeToIcon(data.documentType),
+      originalFile: data.documentFile,
+      documentDate: format(data.documentDate, "yyyy-MM-dd"),
+      doctorName: data.doctorName,
+      visitReason: data.visitReason,
+    };
+    
+    // Add to documents or notes based on type
+    const isNoteType = data.documentType === 'consultation_notes';
+
+    setVisits(prevVisits => 
+      prevVisits.map(visit => {
+        if (visit.id === selectedVisitId) {
+          if (isNoteType) {
+             return { ...visit, notes: [...visit.notes, newDocument] };
+          }
+          return { ...visit, documents: [...visit.documents, newDocument] };
+        }
+        return visit;
+      })
+    );
+
+    toast({
+      title: "Document Added",
+      description: `"${data.documentTitle}" has been added to the visit on ${selectedVisit ? format(parseISO(selectedVisit.date), "MMM d, yyyy") : ''}.`,
+    });
+    setShowUploadDialog(false);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      toast({
-        title: "File Selected",
-        description: `"${file.name}" has been selected. Actual upload functionality is not yet implemented.`,
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
 
   return (
     <div className="flex flex-1 w-full">
+      <UploadDocumentDialog 
+        isOpen={showUploadDialog} 
+        onOpenChange={setShowUploadDialog}
+        onSubmitDocument={handleDocumentUploadSubmit}
+        selectedVisitDate={selectedVisit ? format(parseISO(selectedVisit.date), "MMMM d, yyyy") : undefined}
+      />
+
       <div className="flex w-80 flex-col border-r border-border bg-card">
         <header className="border-b border-border p-4">
           <h2 className="text-foreground text-xl font-semibold leading-tight">Documents</h2>
@@ -88,7 +162,7 @@ export default function DocumentsPage() {
           </TabsList>
           <TabsContent value="visits" className="flex-1 mt-0 overflow-hidden">
             <ScrollArea className="h-full">
-              {visitsData.map((visit) => (
+              {visits.map((visit) => (
                 <button
                   key={visit.id}
                   onClick={() => handleVisitSelect(visit.id)}
@@ -132,15 +206,8 @@ export default function DocumentsPage() {
                   {selectedVisit.doctorName}
                 </p>
               </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                accept=".pdf,.png,.jpg,.jpeg"
-              />
               <Button
-                onClick={handleUploadButtonClick}
+                onClick={() => setShowUploadDialog(true)}
                 className="text-sm font-bold leading-normal tracking-[0.015em] bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Upload className="mr-2 h-4 w-4" />
@@ -204,7 +271,9 @@ export default function DocumentsPage() {
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center p-6">
-            <p className="text-muted-foreground text-lg">Select a visit to see details.</p>
+            <p className="text-muted-foreground text-lg">
+              {visits.length > 0 ? "Select a visit to see details." : "No visits recorded yet. You can add visits in the 'Appointments' section."}
+            </p>
           </div>
         )}
       </div>
