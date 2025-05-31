@@ -138,9 +138,9 @@ export default function NearbyFacilityPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Column */}
-        <div className="lg:w-2/3 space-y-6">
+      <div className="flex flex-col gap-8">
+        {/* Content Column */}
+        <div className="space-y-6">
           {/* Location Detection */}
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">Location Detection</h2>
@@ -195,13 +195,28 @@ export default function NearbyFacilityPage() {
             </div>
           </section>
 
+          {/* Map Section */}
+          <section className="my-6">
+            <h2 className="text-xl font-semibold text-foreground mb-3">Facility Map</h2>
+            <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg border bg-muted">
+              <Image
+                src="https://placehold.co/800x400.png?text=Map+View+of+Selected+Facilities"
+                alt="Map placeholder showing facility locations"
+                width={800}
+                height={400}
+                className="object-cover w-full h-full"
+                data-ai-hint="map locations"
+                priority
+              />
+            </div>
+          </section>
+
           {/* Facility Listings */}
           <section>
              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
                     {filteredFacilities.length > 0 ? `Found ${filteredFacilities.length} Facilities` : "Facilities"}
                 </h2>
-                {/* Optional: Sort or additional filter controls can go here */}
             </div>
             {filteredFacilities.length > 0 ? (
               <div className="space-y-4">
@@ -220,20 +235,8 @@ export default function NearbyFacilityPage() {
             )}
           </section>
         </div>
-
-        {/* Right Column - Map */}
-        <div className="lg:w-1/3 lg:sticky lg:top-24 h-[calc(100vh-10rem)]  min-h-[300px] rounded-lg overflow-hidden shadow-lg border">
-           <Image
-            src="https://placehold.co/600x800.png?text=Simple+Map+View"
-            alt="Map placeholder showing facility locations"
-            width={600}
-            height={800}
-            className="object-cover w-full h-full bg-muted"
-            data-ai-hint="map locations"
-            priority
-          />
-        </div>
       </div>
     </div>
   );
 }
+
