@@ -1,10 +1,12 @@
 
+"use client"; // Added "use client" for useLanguage hook
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext"; // Added import
 
 const upcomingMedications = [
   { name: "Amoxicillin", time: "10:00 AM", icon: PlusCircle },
@@ -12,7 +14,7 @@ const upcomingMedications = [
   { name: "Vitamin D", time: "06:00 PM", icon: PlusCircle },
 ];
 
-const recentAppointments = [ // Renamed from recentVisits
+const recentAppointments = [
   { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart, iconBg: "bg-green-100", iconColor: "text-green-600" },
   { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
 ];
@@ -23,12 +25,14 @@ const recentDocuments = [
 ];
 
 export default function HomePage() {
+  const { t } = useLanguage(); // Use language context
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Welcome back, Kishan</h1>
-        <p className="text-muted-foreground mt-1">Your personal assistant for managing health records, medication reminders, and tracking your health journey effectively.</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('welcomeBack')}</h1>
+        <p className="text-muted-foreground mt-1">{t('welcomeMessage')}</p>
       </div>
 
       {/* Dashboard Grid */}
@@ -37,7 +41,7 @@ export default function HomePage() {
         <section className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Upcoming Medications</CardTitle>
+              <CardTitle className="text-xl">{t('upcomingMedications')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {upcomingMedications.map((med) => (
@@ -59,7 +63,7 @@ export default function HomePage() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full asChild">
-                <Link href="/reminders">View All Medications</Link>
+                <Link href="/reminders">{t('viewAllMedications')}</Link>
               </Button>
             </CardFooter>
           </Card>
@@ -70,10 +74,10 @@ export default function HomePage() {
           {/* Recent Appointments */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Recent Appointments</CardTitle>
+              <CardTitle className="text-xl">{t('recentAppointments')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentAppointments.map((appointment) => ( // Renamed from visit to appointment
+              {recentAppointments.map((appointment) => (
                 <div key={appointment.title} className="flex items-center gap-3">
                   <div className={cn("p-2.5 rounded-full", appointment.iconBg)}>
                     <appointment.icon className={cn("h-5 w-5", appointment.iconColor)} />
@@ -87,7 +91,7 @@ export default function HomePage() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full asChild">
-                <Link href="/visits">View All Appointments</Link>
+                <Link href="/visits">{t('viewAllAppointments')}</Link>
               </Button>
             </CardFooter>
           </Card>
@@ -95,7 +99,7 @@ export default function HomePage() {
           {/* Documents */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Documents</CardTitle>
+              <CardTitle className="text-xl">{t('documents')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {recentDocuments.map((doc) => (
@@ -112,7 +116,7 @@ export default function HomePage() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full asChild">
-                <Link href="/documents">View All Documents</Link>
+                <Link href="/documents">{t('viewAllDocuments')}</Link>
               </Button>
             </CardFooter>
           </Card>

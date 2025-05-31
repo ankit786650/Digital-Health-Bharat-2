@@ -10,25 +10,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-
-type Language = "en" | "hi";
+import { useLanguage } from "@/contexts/LanguageContext"; // Added import
+import type { Locale } from "@/locales/translations"; // Added import
 
 export function LanguageToggle() {
   const [mounted, setMounted] = React.useState(false);
-  // For demonstration, using local state. In a real app, you'd use a context or i18n library.
-  const [currentLanguage, setCurrentLanguage] = React.useState<Language>("en");
+  const { locale, setLocale, t } = useLanguage(); // Use context
 
   React.useEffect(() => {
     setMounted(true);
-    // Here you might want to load the saved language preference
   }, []);
 
-  const handleLanguageChange = (lang: Language) => {
-    setCurrentLanguage(lang);
-    // In a real app, you would trigger language change here
-    console.log(`Language changed to: ${lang}`);
-    // Potentially save to localStorage or update i18n state
+  const handleLanguageChange = (lang: Locale) => {
+    setLocale(lang);
   };
 
   if (!mounted) {
@@ -48,19 +42,19 @@ export function LanguageToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Toggle language">
+        <Button variant="ghost" size="icon" className="h-9 w-9" aria-label={t('toggleLanguage')}>
           <Languages className="h-5 w-5" />
-          <span className="sr-only">Toggle language</span>
+          <span className="sr-only">{t('toggleLanguage')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleLanguageChange("en")} className="flex items-center justify-between">
-          <span>English</span>
-          {currentLanguage === "en" && <Check className="h-4 w-4" />}
+          <span>{t('english')}</span>
+          {locale === "en" && <Check className="h-4 w-4" />}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleLanguageChange("hi")} className="flex items-center justify-between">
-          <span>हिंदी (Hindi)</span>
-          {currentLanguage === "hi" && <Check className="h-4 w-4" />}
+          <span>{t('hindi')}</span>
+          {locale === "hi" && <Check className="h-4 w-4" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

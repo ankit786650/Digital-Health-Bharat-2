@@ -5,6 +5,7 @@ import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { LanguageProvider } from "@/contexts/LanguageContext"; // Added import
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,10 +36,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <AppShell>
-            {children}
-          </AppShell>
-          <Toaster />
+          <LanguageProvider> {/* Added LanguageProvider */}
+            <AppShell>
+              {children}
+            </AppShell>
+            <Toaster />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
