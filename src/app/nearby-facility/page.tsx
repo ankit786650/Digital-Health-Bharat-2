@@ -33,8 +33,8 @@ const mockFacilities: Facility[] = [
     phone: "(080) 1234-5678",
     hours: "Mon-Fri 9 AM - 5 PM",
     distance: "1.2 km",
-    lat: 12.9716, // Example Bangalore lat
-    lng: 77.5946,  // Example Bangalore lng
+    lat: 12.9716,
+    lng: 77.5946,
   },
   {
     id: "2",
@@ -185,7 +185,7 @@ export default function NearbyFacilityPage() {
         <div className="space-y-6">
           {/* Location Detection */}
           <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">Location Detection</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">Nearby Facility</h2>
             <div className="flex flex-col sm:flex-row items-center gap-3 mb-4">
               <Button onClick={handleUseCurrentLocation} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
                 <LocateFixed className="mr-2 h-4 w-4" /> Use My Current Location
