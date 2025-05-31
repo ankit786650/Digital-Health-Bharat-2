@@ -103,7 +103,7 @@ export default function HomePage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-card-foreground">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground">{alert.details}</p>
+                      <p className="text-xs text-foreground/80">{alert.details}</p>
                     </div>
                   </div>
                 ))}
