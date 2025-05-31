@@ -4,70 +4,94 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { BarChart3, CalendarDays, ThumbsUp, AlertTriangle, Phone, TrendingUp } from "lucide-react";
+import { Progress } from "@/components/ui/progress"; // Keep for potential future use, but not in current design
+import { BarChart3, CalendarDays, ChevronLeft, ChevronRight, ThumbsUp, AlertTriangle, Smile, Frown, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
-// Mock data for the calendar grid
-const mockCalendarDays = Array.from({ length: 35 }, (_, i) => {
-  const day = i + 1;
-  let status: "taken" | "missed" | "upcoming" | "nodata" = "nodata";
-  if (day <= 20) { // Simulate past days
-    if (Math.random() > 0.8) status = "missed";
-    else if (Math.random() > 0.1) status = "taken";
-    else status = "nodata"; // some past days might have no data
-  } else if (day <= 22) { // Simulate current/recent past with higher chance of data
-     if (Math.random() > 0.7) status = "missed";
-     else status = "taken";
-  }
-  else {
-    status = "upcoming";
-  }
-  // For a 5x7 grid, some cells might be empty if month doesn't start on first day of week or fill all 35 cells
-  // For simplicity, we'll fill all cells, assuming it's a generic 5-week view
-  return { day: i, status }; // Use index for key, day number can be calculated if needed for display
-});
+interface CalendarDay {
+  date: number | null;
+  status?: 'taken' | 'missed' | 'none' | 'selected';
+  isToday?: boolean;
+  isCurrentMonth: boolean;
+}
 
-const mockAdherenceScore = 82; // Example score
+interface CalendarMonthData {
+  name: string;
+  year: number;
+  days: CalendarDay[];
+  dayLabels: string[];
+}
+
+// Helper to generate calendar days for a month
+const generateCalendarDays = (year: number, month: number): CalendarDay[] => {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday, etc.
+  const daysArray: CalendarDay[] = [];
+
+  // Add empty cells for days before the first of the month
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    daysArray.push({ date: null, isCurrentMonth: false });
+  }
+
+  // Add days of the month
+  for (let i = 1; i <= daysInMonth; i++) {
+    let status: CalendarDay['status'] = 'none';
+    if (i <= 20 && month === 9) { // Mock data for October
+        if (i % 5 === 0 && i !== 15) status = 'missed';
+        else if (i % 3 === 0 || i % 7 === 0) status = 'taken';
+    }
+    if (month === 9 && i === 11) status = 'selected'; // October 11th selected
+
+    daysArray.push({
+      date: i,
+      status: status,
+      isToday: new Date().getFullYear() === year && new Date().getMonth() === month && new Date().getDate() === i,
+      isCurrentMonth: true,
+    });
+  }
+
+  // Add empty cells to fill the last week
+  const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
+  while (daysArray.length < totalCells) {
+    daysArray.push({ date: null, isCurrentMonth: false });
+  }
+  return daysArray;
+};
+
+
+const mockOctoberData: CalendarMonthData = {
+  name: "October",
+  year: 2024,
+  days: generateCalendarDays(2024, 9), // Month is 0-indexed, so 9 is October
+  dayLabels: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+};
+
+const mockNovemberData: CalendarMonthData = {
+  name: "November",
+  year: 2024,
+  days: generateCalendarDays(2024, 10), // 10 is November
+  dayLabels: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+};
+
+
+const adherenceScores = [
+    { title: "Overall Adherence", score: 85, Icon: Smile, color: "text-blue-500" },
+    { title: "Morning Medication", score: 92, Icon: ThumbsUp, color: "text-green-500" },
+    { title: "Evening Medication", score: 78, Icon: Frown, color: "text-orange-500" },
+];
 
 export default function AnalyticsPage() {
-  const { t } = useLanguage(); // Assuming you might add translations later
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
-  const [adherenceScore, setAdherenceScore] = useState(mockAdherenceScore);
-  const [calendarDays, setCalendarDays] = useState(mockCalendarDays);
 
   useEffect(() => {
     setMounted(true);
-    // In a real app, you would fetch this data
   }, []);
-
-  const getAdherenceFeedback = () => {
-    if (adherenceScore >= 80) {
-      return {
-        emoji: <ThumbsUp className="h-6 w-6 text-green-500" />,
-        message: "Great job on staying consistent!",
-        textColor: "text-green-600",
-      };
-    } else if (adherenceScore >= 60) {
-      return {
-        emoji: <AlertTriangle className="h-6 w-6 text-yellow-500" />,
-        message: "Good effort, but some doses were missed.",
-        textColor: "text-yellow-600",
-      };
-    } else {
-      return {
-        emoji: <AlertTriangle className="h-6 w-6 text-red-500" />,
-        message: "Let's work on improving adherence.",
-        textColor: "text-red-600",
-      };
-    }
-  };
-
-  const adherenceFeedback = getAdherenceFeedback();
 
   if (!mounted) {
     return (
@@ -79,101 +103,119 @@ export default function AnalyticsPage() {
     );
   }
 
+  const CalendarView = ({ data }: { data: CalendarMonthData }) => (
+    <Card className="w-full shadow-lg">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-4">
+        <Button variant="ghost" size="icon-sm" aria-label="Previous month">
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <CardTitle className="text-base font-semibold text-center">
+          {data.name} {data.year}
+        </CardTitle>
+        <Button variant="ghost" size="icon-sm" aria-label="Next month">
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      </CardHeader>
+      <CardContent className="px-4 pb-3">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-2">
+          {data.dayLabels.map((label) => (
+            <div key={label}>{label}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-x-1 gap-y-2">
+          {data.days.map((day, index) => (
+            <div key={index} className={cn(
+                "flex flex-col items-center justify-center h-10 w-full rounded-md relative",
+                 day.status === 'selected' && 'bg-primary text-primary-foreground',
+                 day.isToday && day.status !== 'selected' && 'border-2 border-blue-300' // Example: border for today if not selected
+            )}>
+              {day.date !== null && (
+                <>
+                  <span className={cn(
+                    "text-sm",
+                    !day.isCurrentMonth && "text-muted-foreground/50",
+                  )}>
+                    {day.date}
+                  </span>
+                  {day.isCurrentMonth && day.status && day.status !== 'none' && day.status !== 'selected' && (
+                     <span className={cn("absolute bottom-1.5 h-1.5 w-1.5 rounded-full",
+                        day.status === 'taken' && 'bg-green-500',
+                        day.status === 'missed' && 'bg-red-500',
+                     )}></span>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
-      <div className="flex items-center gap-3 mb-6">
-        <BarChart3 className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold text-foreground">Analytics Dashboard</h1>
+    <div className="container mx-auto py-8 px-4 md:px-6 space-y-10">
+      <div className="flex items-center gap-3 mb-2">
+        <h1 className="text-3xl font-bold text-foreground">Medication Adherence</h1>
       </div>
 
-      <Card className="w-full shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            Medication Adherence
-          </CardTitle>
-          <CardDescription>
-            Track your medication intake and adherence over time.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Visual Tracker: Simplified Calendar Grid */}
-          <section>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-primary" />
-              Monthly Dose Tracker (Sample View)
-            </h3>
-            <div className="grid grid-cols-7 gap-1 p-2 border rounded-md bg-muted/30">
-              {calendarDays.map((item) => (
-                <div
-                  key={item.day}
-                  className={cn(
-                    "w-full aspect-square rounded", // Removed flex, items-center, justify-center, text-xs, font-medium
-                    item.status === "taken" && "bg-green-500", // Removed text-white
-                    item.status === "missed" && "bg-red-500", // Removed text-white
-                    item.status === "upcoming" && "bg-slate-200", // Removed text-slate-500
-                    item.status === "nodata" && "bg-slate-100" // Removed text-slate-400
-                  )}
-                  title={item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                >
-                  {/* Minimalist: just color. */}
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-end space-x-3 mt-2 text-xs">
-              <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-green-500"></span> Taken</div>
-              <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-red-500"></span> Missed</div>
-              <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-slate-200"></span> Upcoming</div>
-            </div>
-          </section>
+      {/* Calendar Section */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CalendarView data={mockOctoberData} />
+        <CalendarView data={mockNovemberData} />
+      </section>
 
-          {/* Adherence Score */}
-          <section>
-            <h3 className="text-lg font-semibold mb-3">Adherence Score</h3>
-            <div className="flex items-center gap-4 p-4 border rounded-md bg-card">
-              <div className="flex-shrink-0">
-                {adherenceFeedback.emoji}
-              </div>
-              <div className="flex-grow">
-                <div className="flex justify-between items-baseline mb-1">
-                  <p className={`text-xl font-bold ${adherenceFeedback.textColor}`}>
-                    {adherenceScore}% Adherence
-                  </p>
-                  <p className={`text-sm font-medium ${adherenceFeedback.textColor}`}>
-                    {adherenceFeedback.message}
-                  </p>
-                </div>
-                <Progress value={adherenceScore} className="h-3" />
-              </div>
-            </div>
-          </section>
+      {/* Adherence Score Section */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Adherence Score</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {adherenceScores.map(({ title, score, Icon, color }) => (
+            <Card key={title} className="text-center shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium text-muted-foreground">{title}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center gap-2">
+                <p className={`text-5xl font-bold ${color}`}>{score}%</p>
+                <Icon className={`h-10 w-10 ${color}`} strokeWidth={1.5} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-          {/* Trend Alerts */}
-          <section>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary"/>
-              Trend Alerts
-            </h3>
-            <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300">
-              <AlertTriangle className="h-5 w-5 !text-red-500 dark:!text-red-400" />
-              <AlertTitle className="font-semibold !text-red-700 dark:!text-red-300">Heads Up!</AlertTitle>
-              <AlertDescription className="!text-red-600 dark:!text-red-300/90">
-                You’ve missed 3 doses this week. Consistent intake is key to your treatment.
-              </AlertDescription>
-              <div className="mt-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-red-300 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-800/50 dark:hover:text-red-200"
-                  onClick={() => toast({ title: "Contact Support", description: "Helpline details would appear here." })}
-                >
-                  <Phone className="mr-2 h-4 w-4" />
-                  Contact Support
-                </Button>
-              </div>
-            </Alert>
-          </section>
-        </CardContent>
-      </Card>
+      {/* Trend Alerts Section */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Trend Alerts</h2>
+        <Card className="shadow-lg overflow-hidden">
+            <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
+                <div className="flex-shrink-0 text-red-500">
+                    <AlertTriangle className="h-8 w-8" />
+                </div>
+                <div className="flex-grow">
+                    <h3 className="text-lg font-semibold text-foreground mb-1">Missed Doses Alert</h3>
+                    <p className="text-muted-foreground text-sm mb-3">
+                        You’ve missed 3 doses this week. Taking your medication consistently is important for managing your health. Need help remembering or have questions?
+                    </p>
+                    <Button 
+                        onClick={() => toast({ title: "Support Contact", description: "Healthcare worker/helpline details would appear here."})}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                        Get Support <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="flex-shrink-0 mt-4 md:mt-0">
+                    <Image
+                        src="https://placehold.co/150x140.png"
+                        alt="Health illustration"
+                        width={150}
+                        height={140}
+                        className="rounded-md object-cover"
+                        data-ai-hint="woman health illustration"
+                    />
+                </div>
+            </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
