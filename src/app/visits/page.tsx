@@ -11,10 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 
 const initialVisits: Visit[] = [
-    { id: "1", date: "2024-07-15", doctorName: "Dr. Emily Carter", specialization: "Psychiatry", notes: "Patient reported improved sleep patterns and reduced anxiety levels. Continue current medication regimen." },
-    { id: "2", date: "2024-06-20", doctorName: "Dr. Robert Harris", specialization: "General Practice", notes: "Blood pressure within normal range. Continue with current medication." },
-    { id: "3", date: "2024-05-10", doctorName: "Dr. Emily Carter", specialization: "Psychiatry", notes: "Patient reported mild headaches. Adjusted medication dosage. Follow up in 2 weeks." },
-    { id: "4", date: "2024-04-05", doctorName: "Dr. Robert Harris", specialization: "General Practice", notes: "Initial consultation. Prescribed medication for anxiety and sleep issues." },
+    { id: "1", date: "2024-07-15", doctorName: "Dr. Priya Sharma", specialization: "Psychiatry", notes: "Patient reported improved sleep patterns and reduced anxiety levels. Continue current medication regimen." },
+    { id: "2", date: "2024-06-20", doctorName: "Dr. Vikram Singh", specialization: "General Practice", notes: "Blood pressure within normal range. Continue with current medication." },
+    { id: "3", date: "2024-05-10", doctorName: "Dr. Priya Sharma", specialization: "Psychiatry", notes: "Patient reported mild headaches. Adjusted medication dosage. Follow up in 2 weeks." },
+    { id: "4", date: "2024-04-05", doctorName: "Dr. Vikram Singh", specialization: "General Practice", notes: "Initial consultation. Prescribed medication for anxiety and sleep issues." },
 ];
 
 

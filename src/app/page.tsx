@@ -16,8 +16,8 @@ const upcomingMedications = [
 ];
 
 const recentAppointments = [
-  { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart },
-  { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User },
+  { title: "Cardiology Checkup", doctor: "Dr. Aisha Khan", icon: Heart },
+  { title: "Annual Physical", doctor: "Dr. Vikram Singh", icon: User },
 ];
 
 const recentDocuments = [

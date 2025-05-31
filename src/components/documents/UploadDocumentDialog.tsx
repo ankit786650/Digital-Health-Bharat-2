@@ -220,7 +220,7 @@ export function UploadDocumentDialog({ isOpen, onOpenChange, onSubmitDocument, u
                 <FormItem>
                   <FormLabel>Doctor Name (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Dr. Emily Carter" {...field} />
+                    <Input placeholder="e.g., Dr. Priya Sharma" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

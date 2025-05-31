@@ -23,7 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Initial mock data - will be transformed
 const initialVisitsDataRaw = [
-  { id: "1", date: "2024-05-15", doctorName: "Dr. Emily Carter", documents: [
+  { id: "1", date: "2024-05-15", doctorName: "Dr. Priya Sharma", documents: [
       { id: "doc1", name: "Comprehensive Blood Test Results - Annual Checkup", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
       { id: "doc2", name: "Medication List Adjustment for Hypertension", type: "Prescription", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
       { id: "doc3", name: "Chest X-Ray Scan - Follow-up on Respiratory Symptoms", type: "Imaging", icon: ImageIcon, originalFile: null, documentDate: "2024-05-15" },
@@ -31,8 +31,8 @@ const initialVisitsDataRaw = [
       { id: "note1", name: "Consultation Notes Regarding Sleep Pattern Improvements", type: "Visit Summary", icon: StickyNote, originalFile: null, documentDate: "2024-05-15" },
     ]
   },
-  { id: "2", date: "2024-04-20", doctorName: "Dr. John Doe", documents: [], notes: [] },
-  { id: "3", date: "2024-03-05", doctorName: "Dr. Alice Smith", documents: [{id: "doc4", name: "Follow-up Report on Previous Condition", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-03-05"}], notes: [] },
+  { id: "2", date: "2024-04-20", doctorName: "Dr. Rohan Mehra", documents: [], notes: [] },
+  { id: "3", date: "2024-03-05", doctorName: "Dr. Ananya Reddy", documents: [{id: "doc4", name: "Follow-up Report on Previous Condition", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-03-05"}], notes: [] },
 ];
 
 type DocumentItem = {
