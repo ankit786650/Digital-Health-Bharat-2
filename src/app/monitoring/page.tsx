@@ -200,14 +200,13 @@ export default function MedicineSideEffectsMonitorPage() {
                 </div>
                  <div className="space-y-1">
                     <Label className="block text-center md:text-left mb-1">Rate Experience</Label>
-                    <div className="flex justify-around items-center space-x-2">
+                    <div className="flex justify-center items-center gap-2">
                         {medicationEmojis.map((emoji) => (
                         <Button
                             key={emoji}
                             variant={medicationExperience === emoji ? "default" : "outline"}
-                            size="lg"
                             onClick={() => setMedicationExperience(emoji)}
-                            className="text-2xl p-2 aspect-square hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground"
+                            className="text-xl p-1.5 aspect-square hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground rounded-md flex items-center justify-center h-9 w-9"
                         >
                             {emoji}
                         </Button>
