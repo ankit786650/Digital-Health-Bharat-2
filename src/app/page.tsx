@@ -28,7 +28,7 @@ const recentDocuments = [
 const healthProgramAlerts = [
   { title: "Free Eye Check-up Camp", details: "Community Hall, Next Sunday", icon: Megaphone },
   { title: "Diabetes Screening Drive", details: "City Hospital, All this week", icon: Megaphone },
-  { title: "Vaccination Subsidy Available", details: "Check Govt. Health Portal", icon: BadgePercent },
+  { title: "Vaccination Subsidy Available", details: "Check Govt. Health Portal, Ongoing", icon: BadgePercent },
 ];
 
 export default function HomePage() {
