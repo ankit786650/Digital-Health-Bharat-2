@@ -18,7 +18,7 @@ import {
   Settings, // Ensure settings icon is imported if used directly
   type LucideIcon
 } from 'lucide-react';
-import { Toaster } from "@/components/ui/toaster";
+// import { Toaster } from "@/components/ui/toaster"; // Removed redundant Toaster
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageToggle } from "@/components/language/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext"; // Added import
@@ -48,7 +48,7 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useLanguage(); // Get translation function
 
   return (
-    <div className="flex min-h-screen bg-background"> {/* Overall page background (white) */}
+    <div className="flex min-h-screen bg-background">
       <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r"> {/* Sidebar (white) */}
         <div className="flex items-center gap-3 mb-8 p-2">
           <Avatar className="h-10 w-10">
@@ -114,7 +114,7 @@ export function AppShell({ children }: AppShellProps) {
             {children}
         </main>
       </div>
-      <Toaster />
+      {/* <Toaster /> Removed redundant Toaster */}
     </div>
   );
 }
