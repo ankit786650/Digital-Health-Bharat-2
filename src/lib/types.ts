@@ -41,3 +41,20 @@ export interface MedicalDocument {
   uploadedAt: string; // ISO string
   visitId?: string; // Optional link to a visit
 }
+
+export type FacilityType = 'Government Hospital' | 'PHC' | 'Private Hospital' | 'Jan Aushadhi Kendra' | 'Diagnostic Lab' | 'Pharmacy' | 'Clinic';
+
+export interface Facility {
+  id: string;
+  name: string;
+  type: FacilityType;
+  address: string;
+  phone?: string;
+  hours?: string;
+  distance: string; // e.g., "1.5 km"
+  lat: number; 
+  lng: number; 
+  services?: string[]; 
+  website?: string; 
+  imageUrl?: string; // Optional image for the facility
+}
