@@ -124,6 +124,14 @@ export default function DocumentsPage() {
     setShowUploadDialog(false);
   };
 
+  const handleMoreOptionsClick = (event: React.MouseEvent, docName: string) => {
+    event.stopPropagation(); // Prevent card click if any
+    toast({
+      title: "Coming Soon!",
+      description: `More options for "${docName}" are under development.`,
+    });
+  };
+
 
   return (
     <div className="flex flex-1 flex-col bg-background w-full">
@@ -156,7 +164,11 @@ export default function DocumentsPage() {
           {allDocuments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {allDocuments.map((doc) => (
-                <Card key={doc.id} className="flex items-start gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
+                <Card 
+                  key={doc.id} 
+                  className="flex items-start gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card"
+                  // onClick={() => console.log("Card clicked:", doc.name)} // Example: Card click handler
+                >
                   <CardContent className="flex items-start gap-4 p-0 w-full">
                     <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10 mt-1">
                       <doc.icon className="h-5 w-5" />
@@ -170,7 +182,12 @@ export default function DocumentsPage() {
                          <p className="text-muted-foreground text-xs font-normal leading-normal mt-0.5">Dr. {doc.doctorName}</p>
                       )}
                     </div>
-                    <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground shrink-0">
+                    <Button 
+                      variant="ghost" 
+                      size="icon-sm" 
+                      className="ml-auto text-muted-foreground hover:text-accent-foreground shrink-0"
+                      onClick={(e) => handleMoreOptionsClick(e, doc.name)}
+                    >
                       <MoreVertical className="h-5 w-5" />
                     </Button>
                   </CardContent>
@@ -178,7 +195,7 @@ export default function DocumentsPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-1 items-center justify-center py-10 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
               <Package className="h-16 w-16 text-muted-foreground mb-4" />
               <p className="text-foreground text-lg font-medium">No Documents Yet</p>
               <p className="text-muted-foreground text-sm mt-1">
