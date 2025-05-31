@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { MapPinned, Search, LocateFixed, SlidersHorizontal, AlertCircle, Package, Info } from "lucide-react";
+import { MapPinned, Search, LocateFixed, Info, Package, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -108,13 +107,36 @@ const mockFacilities: Facility[] = [
 export default function NearbyFacilityPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<FacilityType[]>([]);
+  const [mapText, setMapText] = useState("Map View of Nearby Facilities");
   const { toast } = useToast();
 
   const handleUseCurrentLocation = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Automatic location detection will be implemented in a future update.",
-    });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          toast({
+            title: "Location Found!",
+            description: `Latitude: ${position.coords.latitude.toFixed(4)}, Longitude: ${position.coords.longitude.toFixed(4)}. Facility search based on this location is a future feature.`,
+          });
+          // In a real app, you'd use these coordinates to fetch facilities
+          // For now, we can clear the search term or set a placeholder
+          setSearchTerm(`Near ${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`);
+        },
+        (error) => {
+          toast({
+            title: "Location Error",
+            description: error.message || "Could not retrieve your location.",
+            variant: "destructive",
+          });
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation Not Supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleTypeChange = (type: FacilityType) => {
@@ -136,6 +158,25 @@ export default function NearbyFacilityPage() {
     });
   }, [searchTerm, selectedTypes]);
 
+  useEffect(() => {
+    let newMapText = "Map View of Nearby Facilities";
+    if (filteredFacilities.length === 0 && (searchTerm || selectedTypes.length > 0)) {
+      newMapText = "No Matching Facilities to Display on Map";
+    } else if (searchTerm && selectedTypes.length > 0) {
+      newMapText = `Map for '${searchTerm}' (${selectedTypes.join(', ')})`;
+    } else if (searchTerm) {
+      newMapText = `Map for '${searchTerm}'`;
+    } else if (selectedTypes.length > 0) {
+      if (selectedTypes.length === 1) {
+        newMapText = `Map of ${selectedTypes[0]}s`;
+      } else {
+        newMapText = `Map of ${selectedTypes.join(' & ')}`;
+      }
+    }
+    setMapText(newMapText);
+  }, [filteredFacilities, searchTerm, selectedTypes]);
+
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
       <div className="flex flex-col gap-8">
@@ -153,17 +194,17 @@ export default function NearbyFacilityPage() {
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Enter Address or PIN Code"
+                  placeholder="Search by Name, Address or PIN Code"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 w-full"
                 />
               </div>
             </div>
-            <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700">
-              <Info className="h-5 w-5 text-blue-500" />
-              <AlertTitle className="font-medium text-blue-800">Location Permissions</AlertTitle>
-              <AlertDescription className="text-blue-700">
+            <Alert variant="default" className="bg-info-muted border-info-muted text-info-foreground">
+              <Info className="h-5 w-5 text-info" />
+              <AlertTitle className="font-medium text-info-foreground/90">Location Permissions</AlertTitle>
+              <AlertDescription className="text-info-foreground/80">
                 We need your permission to access your location. If denied, you can manually enter your location or use a PIN code. <a href="#" className="font-semibold hover:underline">Learn more.</a>
               </AlertDescription>
             </Alert>
@@ -171,10 +212,10 @@ export default function NearbyFacilityPage() {
 
           {/* Filter by Facility Type */}
           <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">Filter by Facility Type <span className="text-sm text-muted-foreground">(within 5km)</span></h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">Filter by Facility Type <span className="text-sm text-muted-foreground">(within 5km - mock range)</span></h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {allFacilityTypes.map((type) => (
-                <div key={type} 
+                <div key={type}
                      className={cn(
                         "flex items-center space-x-2 border border-border rounded-md p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
                         selectedTypes.includes(type) && "bg-primary/10 border-primary text-primary ring-1 ring-primary"
@@ -184,7 +225,7 @@ export default function NearbyFacilityPage() {
                   <Checkbox
                     id={`type-${type.replace(/\s+/g, '-')}`}
                     checked={selectedTypes.includes(type)}
-                    onCheckedChange={() => handleTypeChange(type)}
+                    onCheckedChange={() => handleTypeChange(type)} // This will be triggered by the div click too
                     className={cn(selectedTypes.includes(type) ? "border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground")}
                   />
                   <Label htmlFor={`type-${type.replace(/\s+/g, '-')}`} className="font-medium text-sm cursor-pointer select-none">
@@ -200,13 +241,14 @@ export default function NearbyFacilityPage() {
             <h2 className="text-xl font-semibold text-foreground mb-3">Facility Map</h2>
             <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg border bg-muted">
               <Image
-                src="https://placehold.co/800x400.png?text=Map+View+of+Selected+Facilities"
-                alt="Map placeholder showing facility locations"
+                src={`https://placehold.co/800x400.png?text=${encodeURIComponent(mapText)}`}
+                alt={mapText}
                 width={800}
                 height={400}
                 className="object-cover w-full h-full"
                 data-ai-hint="map locations"
                 priority
+                key={mapText} // Force re-render if text changes for placeholder
               />
             </div>
           </section>
@@ -239,4 +281,3 @@ export default function NearbyFacilityPage() {
     </div>
   );
 }
-
