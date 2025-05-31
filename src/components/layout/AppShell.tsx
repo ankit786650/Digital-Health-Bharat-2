@@ -19,7 +19,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeToggle } from "@/components/theme/ThemeToggle"; // Import ThemeToggle
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface NavItem {
   href: string;
@@ -76,12 +76,25 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </nav>
 
-        <div className="mt-auto space-y-1"> {/* Added space-y-1 for spacing between items */}
-          <ThemeToggle /> {/* Add ThemeToggle here */}
+        <div className="mt-auto pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+             <Link
+                href="/settings" // Assuming a settings page or can be a placeholder
+                className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
+                    "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {/* Placeholder for future settings icon if needed */}
+                {/* <Settings className="h-5 w-5" />  */}
+                <span>Settings</span> 
+              </Link>
+            <ThemeToggle />
+          </div>
           <Link
-            href="/logout"
+            href="/logout" // Assuming a logout page or functionality
             className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 w-full",
                 "text-destructive hover:bg-destructive/10"
             )}
           >
