@@ -27,12 +27,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PenLine, Save, Smile, Meh, Frown, AlertCircle, BellRing } from "lucide-react"; // Using AlertCircle and BellRing for toggles
+import { PenLine, Save, Smile, Meh, Frown, AlertCircle, BellRing, LineChart, Pill as PillIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 
 const feelingEmojis = ["😄", "😊", "😐", "😟", "😞"];
-const medicationEmojis = ["👍", "🙂", "😐", "🙁", "👎"]; // Example for medication experience
+const medicationEmojis = ["👍", "🙂", "😐", "🙁", "👎"];
 
 const mockMedications = [
   { id: "med1", name: "Lisinopril (20mg)" },
@@ -91,6 +91,13 @@ export default function MedicineSideEffectsMonitorPage() {
      // Reset form
     setSelectedMedication("");
     setMedicationExperience(null);
+  };
+
+  const handleViewReport = (reportType: string) => {
+    toast({
+        title: `${reportType} Report`,
+        description: `Viewing the ${reportType.toLowerCase()} report is coming soon!`,
+    });
   };
 
 
@@ -230,6 +237,26 @@ export default function MedicineSideEffectsMonitorPage() {
               </div>
             </CardContent>
           </Card>
+
+           {/* Symptom & Medication Reports Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Symptom & Medication Reports</CardTitle>
+              <CardDescription>
+                View detailed reports and trends based on your logged data.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button onClick={() => handleViewReport("Symptom")} variant="outline" className="w-full">
+                <LineChart className="mr-2 h-4 w-4" />
+                View Symptom Report
+              </Button>
+              <Button onClick={() => handleViewReport("Medication")} variant="outline" className="w-full">
+                <PillIcon className="mr-2 h-4 w-4" />
+                View Medication Report
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -272,5 +299,3 @@ export default function MedicineSideEffectsMonitorPage() {
     </div>
   );
 }
-
-    
