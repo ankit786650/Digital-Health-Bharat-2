@@ -34,9 +34,9 @@ body {
     --destructive-foreground: 0 0% 100%; /* White text on destructive */
 
     --info: 200 85% 51%; /* Clear Blue for informational icons */
-    --info-foreground: 0 0% 100%;
-    --info-muted: 200 85% 95%; /* Light blue for info icon backgrounds */
-    --info-muted-foreground: 200 85% 40%; /* Darker blue for icons on info-muted bg */
+    --info-foreground: 0 0% 100%; /* White text on primary info background */
+    --info-muted: 200 85% 92%; /* Light blue for info icon backgrounds - Adjusted */
+    --info-muted-foreground: 200 60% 30%; /* Darker blue for text on info-muted bg - Adjusted */
 
     --border: 220 13% 88%; /* Border color for cards, inputs */
     --input: 220 13% 88%;
@@ -78,7 +78,7 @@ body {
 
     --info: 200 80% 65%;
     --info-foreground: 0 0% 100%;
-    --info-muted: 200 35% 20%;
+    --info-muted: 200 35% 20%; 
     --info-muted-foreground: 200 75% 75%;
 
     --border: 215 25% 28%; /* Border color for dark mode */
@@ -102,3 +102,4 @@ body {
 .form-input {
   @apply block w-full rounded-md border-input bg-card shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50;
 }
+

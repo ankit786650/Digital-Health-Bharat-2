@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -201,11 +202,11 @@ export default function NearbyFacilityPage() {
                 />
               </div>
             </div>
-            <Alert variant="default" className="bg-info-muted border-info-muted text-info-foreground">
+            <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
               <Info className="h-5 w-5 text-info" />
-              <AlertTitle className="font-medium text-info-foreground/90">Location Permissions</AlertTitle>
-              <AlertDescription className="text-info-foreground/80">
-                We need your permission to access your location. If denied, you can manually enter your location or use a PIN code. <a href="#" className="font-semibold hover:underline">Learn more.</a>
+              <AlertTitle className="font-medium text-info-muted-foreground">Location Permissions</AlertTitle>
+              <AlertDescription className="text-info-muted-foreground/90">
+                We need your permission to access your location. If denied, you can manually enter your location or use a PIN code. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more.</a>
               </AlertDescription>
             </Alert>
           </section>
@@ -281,3 +282,4 @@ export default function NearbyFacilityPage() {
     </div>
   );
 }
+
