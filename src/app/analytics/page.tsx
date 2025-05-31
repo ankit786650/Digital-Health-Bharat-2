@@ -107,15 +107,15 @@ export default function AnalyticsPage() {
                 <div
                   key={item.day}
                   className={cn(
-                    "w-full aspect-square rounded flex items-center justify-center text-xs font-medium",
-                    item.status === "taken" && "bg-green-500 text-white",
-                    item.status === "missed" && "bg-red-500 text-white",
-                    item.status === "upcoming" && "bg-slate-200 text-slate-500",
-                    item.status === "nodata" && "bg-slate-100 text-slate-400"
+                    "w-full aspect-square rounded", // Removed flex, items-center, justify-center, text-xs, font-medium
+                    item.status === "taken" && "bg-green-500", // Removed text-white
+                    item.status === "missed" && "bg-red-500", // Removed text-white
+                    item.status === "upcoming" && "bg-slate-200", // Removed text-slate-500
+                    item.status === "nodata" && "bg-slate-100" // Removed text-slate-400
                   )}
                   title={item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                 >
-                  {/* Minimalist: just color. Could add day number if needed */}
+                  {/* Minimalist: just color. */}
                 </div>
               ))}
             </div>
