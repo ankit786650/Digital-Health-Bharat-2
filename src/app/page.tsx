@@ -26,9 +26,30 @@ const recentDocuments = [
 ];
 
 const healthProgramAlerts = [
-  { title: "Free Eye Check-up Camp", details: "Community Hall, Next Sunday", icon: Megaphone },
-  { title: "Diabetes Screening Drive", details: "City Hospital, All this week", icon: Megaphone },
-  { title: "Vaccination Subsidy Available", details: "Check Govt. Health Portal, Ongoing", icon: BadgePercent },
+  {
+    id: "alert1",
+    title: "Local Health Camp: Free Diabetes Screening",
+    details: "Main Street Community Hall, July 25th, 9 AM - 3 PM.",
+    actionText: "Learn More & Register",
+    icon: Megaphone,
+    bgColorClass: "bg-green-100/60 dark:bg-green-900/40 border-green-200 dark:border-green-700/60",
+    iconBgClass: "bg-green-200/70 dark:bg-green-700/60",
+    iconColorClass: "text-green-700 dark:text-green-300",
+    textColorClass: "text-green-700 dark:text-green-300",
+    actionLink: "#",
+  },
+  {
+    id: "alert2",
+    title: "New Subsidy for Mental Wellness Programs",
+    details: "Eligible individuals can now apply for reduced-cost therapy sessions.",
+    actionText: "Check Eligibility",
+    icon: BadgePercent,
+    bgColorClass: "bg-yellow-100/60 dark:bg-yellow-900/40 border-yellow-200 dark:border-yellow-700/60",
+    iconBgClass: "bg-yellow-200/70 dark:bg-yellow-700/60",
+    iconColorClass: "text-yellow-700 dark:text-yellow-300",
+    textColorClass: "text-orange-600 dark:text-yellow-400",
+    actionLink: "#",
+  },
 ];
 
 export default function HomePage() {
@@ -92,25 +113,28 @@ export default function HomePage() {
 
           <section>
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <CardTitle className="text-xl">{t('healthProgramAlerts')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 p-4">
                 {healthProgramAlerts.map((alert) => (
-                  <div key={alert.title} className="flex items-center gap-3">
-                     <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
-                      <alert.icon className="h-5 w-5" />
+                  <div key={alert.id} className={cn("flex items-start gap-3 p-3 rounded-lg border", alert.bgColorClass)}>
+                    <div className={cn("p-2.5 rounded-full shrink-0 mt-0.5", alert.iconBgClass)}>
+                      <alert.icon className={cn("h-5 w-5", alert.iconColorClass)} />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-card-foreground">{alert.title}</p>
-                      <p className="text-xs text-foreground/80">{alert.details}</p>
+                    <div className="flex-grow">
+                      <p className={cn("text-sm font-semibold", alert.textColorClass)}>{alert.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-normal">{alert.details}</p>
+                      <Link href={alert.actionLink} className={cn("text-xs font-semibold mt-1.5 inline-block hover:underline", alert.textColorClass)}>
+                        {alert.actionText}
+                      </Link>
                     </div>
                   </div>
                 ))}
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 pt-0">
                 <Button variant="outline" className="w-full" asChild>
-                  <Link href="/programs">{t('viewAllPrograms')}</Link>
+                  <Link href="/programs">{t('viewAllAlerts')}</Link>
                 </Button>
               </CardFooter>
             </Card>

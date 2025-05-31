@@ -23,11 +23,11 @@ export const translations = {
     upcomingMedications: 'Upcoming Medications',
     recentAppointments: 'Recent Appointments',
     documents: 'Documents',
-    healthProgramAlerts: 'Health Program Alerts', // New
+    healthProgramAlerts: 'Health Program Alerts',
     viewAllMedications: 'View All Medications',
     viewAllAppointments: 'View All Appointments',
     viewAllDocuments: 'View All Documents',
-    viewAllPrograms: 'View All Programs', // New
+    viewAllAlerts: 'View All Alerts',
   },
   hi: {
     // LanguageToggle
@@ -52,11 +52,11 @@ export const translations = {
     upcomingMedications: 'आगामी दवाएं',
     recentAppointments: 'हाल की मुलाकातें',
     documents: 'दस्तावेज़',
-    healthProgramAlerts: 'स्वास्थ्य कार्यक्रम अलर्ट', // New
+    healthProgramAlerts: 'स्वास्थ्य कार्यक्रम अलर्ट',
     viewAllMedications: 'सभी दवाएं देखें',
     viewAllAppointments: 'सभी मुलाकातें देखें',
     viewAllDocuments: 'सभी दस्तावेज़ देखें',
-    viewAllPrograms: 'सभी कार्यक्रम देखें', // New
+    viewAllAlerts: 'सभी अलर्ट देखें',
   },
 };
 
