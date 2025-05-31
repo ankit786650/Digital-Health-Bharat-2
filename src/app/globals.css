@@ -27,11 +27,16 @@ body {
     --muted: 220 14% 93%; /* Subtle gray for muted backgrounds/hovers */
     --muted-foreground: 220 9% 47%; /* Gray text for muted descriptions */
 
-    --accent: 0 79% 75%; /* Warm Coral #F08080 for important actions/notifications */
+    --accent: 0 73% 65%; /* Darker Coral #E56767 for better contrast */
     --accent-foreground: 0 0% 100%; /* White text for accent elements */
 
-    --destructive: 0 79% 72%; /* Warm Coral #F08080 */
+    --destructive: 0 73% 65%; /* Darker Coral #E56767 */
     --destructive-foreground: 0 0% 100%; /* White text for destructive elements */
+
+    --info: 210 70% 55%; /* Accessible Blue #3B82F6 */
+    --info-foreground: 0 0% 100%; /* White text for info elements */
+    --info-muted: 210 70% 95%; /* Light Blue #EBF2FE for info icon backgrounds */
+    --info-muted-foreground: 210 70% 50%; /* Darker Blue #3573DB for icons on info-muted bg */
 
     --border: 220 13% 88%; /* Border color (e.g., slate-200/slate-300) */
     --input: 220 13% 88%;
@@ -60,10 +65,16 @@ body {
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 0 79% 65%; /* Darker Warm Coral for dark mode */
+    --accent: 0 73% 60%; /* Adjusted Darker Coral for dark mode */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 79% 68%; /* Darker Warm Coral for dark mode */
+    --destructive: 0 73% 62%; /* Adjusted Darker Coral for dark mode */
     --destructive-foreground: 0 0% 100%;
+    
+    --info: 210 70% 60%; /* Adjusted Blue for dark mode */
+    --info-foreground: 0 0% 100%;
+    --info-muted: 210 40% 15%; /* Darker Blue for info icon backgrounds in dark mode */
+    --info-muted-foreground: 210 70% 70%; /* Lighter Blue for icons on dark info-muted bg */
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 174 46% 50%;
@@ -85,4 +96,3 @@ body {
 .form-input {
   @apply block w-full rounded-md border-input bg-card shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50;
 }
-

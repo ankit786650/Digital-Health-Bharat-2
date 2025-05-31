@@ -7,7 +7,7 @@ import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } fro
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext"; 
-import { useToast } from "@/hooks/use-toast"; // Added import
+import { useToast } from "@/hooks/use-toast";
 
 const upcomingMedications = [
   { name: "Amoxicillin", time: "10:00 AM", icon: PlusCircle },
@@ -16,18 +16,18 @@ const upcomingMedications = [
 ];
 
 const recentAppointments = [
-  { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart, iconBg: "bg-green-100", iconColor: "text-green-600" },
-  { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+  { title: "Cardiology Checkup", doctor: "Dr. Emily Clark", icon: Heart },
+  { title: "Annual Physical", doctor: "Dr. Robert Harris", icon: User },
 ];
 
 const recentDocuments = [
-  { name: "Lab Results", date: "07/15/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
-  { name: "Insurance Card", date: "06/20/2024", icon: DocumentIcon, iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+  { name: "Lab Results", date: "07/15/2024", icon: DocumentIcon },
+  { name: "Insurance Card", date: "06/20/2024", icon: DocumentIcon },
 ];
 
 export default function HomePage() {
   const { t } = useLanguage(); 
-  const { toast } = useToast(); // Initialize useToast
+  const { toast } = useToast();
 
   const handleMoreOptionsClick = (medicationName: string) => {
     toast({
@@ -56,7 +56,7 @@ export default function HomePage() {
               {upcomingMedications.map((med) => (
                 <div key={med.name} className="flex items-center justify-between p-3 bg-card rounded-lg border hover:shadow-sm transition-shadow">
                   <div className="flex items-center gap-4">
-                    <div className="bg-primary/10 text-primary p-2.5 rounded-full"> {/* Changed bg-blue-100 to bg-primary/10 */}
+                    <div className="bg-primary/10 text-primary p-2.5 rounded-full">
                       <med.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -68,7 +68,7 @@ export default function HomePage() {
                     variant="ghost" 
                     size="icon-sm" 
                     className="text-muted-foreground"
-                    onClick={() => handleMoreOptionsClick(med.name)} // Added onClick handler
+                    onClick={() => handleMoreOptionsClick(med.name)}
                   >
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
@@ -76,7 +76,7 @@ export default function HomePage() {
               ))}
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full asChild">
+              <Button variant="outline" className="w-full" asChild>
                 <Link href="/reminders">{t('viewAllMedications')}</Link>
               </Button>
             </CardFooter>
@@ -93,8 +93,8 @@ export default function HomePage() {
             <CardContent className="space-y-4">
               {recentAppointments.map((appointment) => (
                 <div key={appointment.title} className="flex items-center gap-3">
-                  <div className={cn("p-2.5 rounded-full", appointment.iconBg)}>
-                    <appointment.icon className={cn("h-5 w-5", appointment.iconColor)} />
+                  <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
+                    <appointment.icon className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-card-foreground">{appointment.title}</p>
@@ -104,7 +104,7 @@ export default function HomePage() {
               ))}
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full asChild">
+              <Button variant="outline" className="w-full" asChild>
                 <Link href="/visits">{t('viewAllAppointments')}</Link>
               </Button>
             </CardFooter>
@@ -118,8 +118,8 @@ export default function HomePage() {
             <CardContent className="space-y-4">
               {recentDocuments.map((doc) => (
                 <div key={doc.name} className="flex items-center gap-3">
-                   <div className={cn("p-2.5 rounded-full", doc.iconBg)}>
-                    <doc.icon className={cn("h-5 w-5", doc.iconColor)} />
+                   <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
+                    <doc.icon className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-card-foreground">{doc.name}</p>
@@ -129,7 +129,7 @@ export default function HomePage() {
               ))}
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full asChild">
+              <Button variant="outline" className="w-full" asChild>
                 <Link href="/documents">{t('viewAllDocuments')}</Link>
               </Button>
             </CardFooter>
