@@ -27,10 +27,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Camera, CalendarIcon as CalendarDateIcon, Save, Phone } from "lucide-react";
+import { Camera, CalendarIcon as CalendarDateIcon, Save, Phone, Settings as SettingsIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -61,6 +62,7 @@ export default function ProfilePage() {
   const [isMounted, setIsMounted] = useState(false);
   const [calculatedBmi, setCalculatedBmi] = useState<string>("N/A");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsMounted(true);
@@ -108,6 +110,10 @@ export default function ProfilePage() {
     // Handle profile update logic here
     // If data.avatarUrl is a Data URL, you might want to upload it to a storage service
     // and replace data.avatarUrl with the actual stored image URL before saving to a database.
+    toast({
+      title: "Profile Saved",
+      description: "Your profile information has been successfully updated.",
+    });
   }
 
   const handleAvatarChangeClick = () => {
@@ -420,6 +426,4 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-
     

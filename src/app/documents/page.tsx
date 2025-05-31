@@ -3,7 +3,7 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -11,10 +11,11 @@ import {
   FileText,
   MoreVertical,
   Upload,
-  StickyNote
+  StickyNote,
+  Archive
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { useToast } from "@/hooks/use-toast"; // Added useToast
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data, replace with actual data fetching
 const visitsData = [
@@ -38,8 +39,8 @@ type VisitItem = { id: string; date: string; doctorName: string; documents: Docu
 
 export default function DocumentsPage() {
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(visitsData.length > 0 ? visitsData[0].id : null);
-  const fileInputRef = useRef<HTMLInputElement>(null); // Added ref for file input
-  const { toast } = useToast(); // Added toast hook
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const selectedVisit = visitsData.find(v => v.id === selectedVisitId);
 
@@ -48,19 +49,16 @@ export default function DocumentsPage() {
   };
 
   const handleUploadButtonClick = () => {
-    fileInputRef.current?.click(); // Trigger click on hidden file input
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Here you would typically handle the file upload process (e.g., send to a server)
-      // For now, we'll just show a toast message.
       toast({
         title: "File Selected",
         description: `"${file.name}" has been selected. Actual upload functionality is not yet implemented.`,
       });
-      // Reset the file input value if needed, so the same file can be selected again
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -71,19 +69,19 @@ export default function DocumentsPage() {
     <div className="flex flex-1 w-full">
       <div className="flex w-80 flex-col border-r border-border bg-card">
         <header className="border-b border-border p-4">
-          <h2 className="text-slate-900 text-xl font-semibold leading-tight">Documents</h2>
+          <h2 className="text-foreground text-xl font-semibold leading-tight">Documents</h2>
         </header>
         <Tabs defaultValue="visits" className="flex flex-col flex-1">
           <TabsList className="grid w-full grid-cols-2 rounded-none border-b border-border bg-card px-2 h-auto py-0">
             <TabsTrigger
               value="visits"
-              className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-slate-900 data-[state=inactive]:text-slate-500 hover:data-[state=inactive]:border-slate-300 hover:data-[state=inactive]:text-slate-700 py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
+              className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:border-accent hover:data-[state=inactive]:text-accent-foreground py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
             >
               Visits
             </TabsTrigger>
             <TabsTrigger
               value="categories"
-              className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-slate-900 data-[state=inactive]:text-slate-500 hover:data-[state=inactive]:border-slate-300 hover:data-[state=inactive]:text-slate-700 py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
+              className="flex-1 flex-col items-center justify-center border-b-[3px] data-[state=active]:border-primary data-[state=inactive]:border-transparent data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:border-accent hover:data-[state=inactive]:text-accent-foreground py-3 transition-colors rounded-none text-sm font-semibold leading-normal data-[state=active]:shadow-none focus-visible:ring-0"
             >
               Categories
             </TabsTrigger>
@@ -98,22 +96,26 @@ export default function DocumentsPage() {
                     ${selectedVisitId === visit.id ? "bg-accent border-r-2 border-primary" : "hover:bg-accent/50"}`}
                 >
                   <div className="flex flex-col justify-center overflow-hidden">
-                    <p className={`text-sm font-semibold leading-normal line-clamp-1 ${selectedVisitId === visit.id ? "text-primary" : "text-slate-800"}`}>
+                    <p className={`text-sm font-semibold leading-normal line-clamp-1 ${selectedVisitId === visit.id ? "text-primary" : "text-foreground"}`}>
                       {format(parseISO(visit.date), "MMMM d, yyyy")}
                     </p>
-                    <p className="text-slate-600 text-xs font-normal leading-normal line-clamp-2">
+                    <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">
                       {visit.doctorName}
                     </p>
                   </div>
                   <div className="shrink-0">
-                    <ChevronRight className={`h-5 w-5 ${selectedVisitId === visit.id ? "text-primary" : "text-slate-500"}`} />
+                    <ChevronRight className={`h-5 w-5 ${selectedVisitId === visit.id ? "text-primary" : "text-muted-foreground"}`} />
                   </div>
                 </button>
               ))}
             </ScrollArea>
           </TabsContent>
-          <TabsContent value="categories" className="flex-1 mt-0 p-4">
-            <p className="text-slate-500 text-sm">Category view not yet implemented.</p>
+          <TabsContent value="categories" className="flex-1 mt-0 p-6 flex flex-col items-center justify-center text-center">
+            <Archive className="h-16 w-16 text-muted-foreground mb-4" />
+            <p className="text-foreground text-lg font-medium">Category View Coming Soon</p>
+            <p className="text-muted-foreground text-sm mt-1">
+              This feature is under development. Soon you'll be able to organize your documents by category!
+            </p>
           </TabsContent>
         </Tabs>
       </div>
@@ -123,10 +125,10 @@ export default function DocumentsPage() {
           <>
             <div className="flex flex-wrap items-center justify-between gap-4 p-6 border-b border-border">
               <div className="flex flex-col gap-1">
-                <h1 className="text-slate-900 text-2xl font-semibold leading-tight">
+                <h1 className="text-foreground text-2xl font-semibold leading-tight">
                   {format(parseISO(selectedVisit.date), "MMMM d, yyyy")}
                 </h1>
-                <p className="text-slate-600 text-sm font-normal leading-normal">
+                <p className="text-muted-foreground text-sm font-normal leading-normal">
                   {selectedVisit.doctorName}
                 </p>
               </div>
@@ -135,10 +137,10 @@ export default function DocumentsPage() {
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".pdf,.png,.jpg,.jpeg" // Define accepted file types
+                accept=".pdf,.png,.jpg,.jpeg"
               />
               <Button
-                onClick={handleUploadButtonClick} // Added onClick handler
+                onClick={handleUploadButtonClick}
                 className="text-sm font-bold leading-normal tracking-[0.015em] bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Upload className="mr-2 h-4 w-4" />
@@ -148,7 +150,7 @@ export default function DocumentsPage() {
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-6">
                 <div>
-                  <h3 className="text-slate-800 text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Documents</h3>
+                  <h3 className="text-foreground text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Documents</h3>
                   {selectedVisit.documents.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {selectedVisit.documents.map((doc) => (
@@ -161,7 +163,7 @@ export default function DocumentsPage() {
                               <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{doc.name}</p>
                               <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{doc.type}</p>
                             </div>
-                            <Button variant="ghost" size="icon-sm" className="ml-auto text-slate-400 hover:text-slate-600">
+                            <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground">
                               <MoreVertical className="h-5 w-5" />
                             </Button>
                           </CardContent>
@@ -173,7 +175,7 @@ export default function DocumentsPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-slate-800 text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Notes</h3>
+                  <h3 className="text-foreground text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Notes</h3>
                   {selectedVisit.notes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {selectedVisit.notes.map((note) => (
@@ -186,7 +188,7 @@ export default function DocumentsPage() {
                               <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{note.name}</p>
                               <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{note.type}</p>
                             </div>
-                             <Button variant="ghost" size="icon-sm" className="ml-auto text-slate-400 hover:text-slate-600">
+                             <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground">
                               <MoreVertical className="h-5 w-5" />
                             </Button>
                           </CardContent>
@@ -202,7 +204,7 @@ export default function DocumentsPage() {
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center p-6">
-            <p className="text-slate-500 text-lg">Select a visit to see details.</p>
+            <p className="text-muted-foreground text-lg">Select a visit to see details.</p>
           </div>
         )}
       </div>
