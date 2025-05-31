@@ -16,21 +16,23 @@ export const translations = {
     profile: 'Profile',
     settings: 'Settings',
     logOut: 'Log Out',
-    monitor: 'Monitor', // Added monitor
+    monitor: 'Monitor', 
     // HomePage
     welcomeBack: 'Welcome back, Kishan',
     welcomeMessage: 'Your personal assistant for managing health records, medication reminders, and tracking your health journey effectively.',
     upcomingMedications: 'Upcoming Medications',
     recentAppointments: 'Recent Appointments',
     documents: 'Documents',
+    healthProgramAlerts: 'Health Program Alerts', // New
     viewAllMedications: 'View All Medications',
     viewAllAppointments: 'View All Appointments',
     viewAllDocuments: 'View All Documents',
+    viewAllPrograms: 'View All Programs', // New
   },
   hi: {
     // LanguageToggle
-    english: 'English', // English label remains English
-    hindi: 'हिंदी (Hindi)', // Hindi label remains Hindi
+    english: 'English', 
+    hindi: 'हिंदी (Hindi)', 
     toggleLanguage: 'भाषा टॉगल करें',
     // AppShell
     kishan: 'किशन',
@@ -43,23 +45,20 @@ export const translations = {
     profile: 'प्रोफ़ाइल',
     settings: 'समायोजन',
     logOut: 'लॉग आउट',
-    monitor: 'निगरानी', // Added monitor in Hindi
+    monitor: 'निगरानी', 
     // HomePage
     welcomeBack: 'वापस स्वागत है, किशन',
     welcomeMessage: 'स्वास्थ्य रिकॉर्ड, दवा अनुस्मारक, और आपकी स्वास्थ्य यात्रा को प्रभावी ढंग से ट्रैक करने के लिए आपका व्यक्तिगत सहायक।',
     upcomingMedications: 'आगामी दवाएं',
     recentAppointments: 'हाल की मुलाकातें',
     documents: 'दस्तावेज़',
+    healthProgramAlerts: 'स्वास्थ्य कार्यक्रम अलर्ट', // New
     viewAllMedications: 'सभी दवाएं देखें',
     viewAllAppointments: 'सभी मुलाकातें देखें',
     viewAllDocuments: 'सभी दस्तावेज़ देखें',
+    viewAllPrograms: 'सभी कार्यक्रम देखें', // New
   },
 };
 
 export type Locale = keyof typeof translations;
-// Add 'monitor' to TranslationKey if it should be a standard translatable key
-// For now, AppShell handles 'monitor' specially if not in translations['en']
 export type TranslationKey = keyof typeof translations['en'];
-
-
-    

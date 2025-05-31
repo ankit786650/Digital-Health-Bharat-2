@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon, Megaphone, BadgePercent } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext"; 
@@ -23,6 +23,12 @@ const recentAppointments = [
 const recentDocuments = [
   { name: "Lab Results", date: "07/15/2024", icon: DocumentIcon },
   { name: "Insurance Card", date: "06/20/2024", icon: DocumentIcon },
+];
+
+const healthProgramAlerts = [
+  { title: "Free Eye Check-up Camp", details: "Community Hall, Next Sunday", icon: Megaphone },
+  { title: "Diabetes Screening Drive", details: "City Hospital, All this week", icon: Megaphone },
+  { title: "Vaccination Subsidy Available", details: "Check Govt. Health Portal", icon: BadgePercent },
 ];
 
 export default function HomePage() {
@@ -83,7 +89,7 @@ export default function HomePage() {
           </Card>
         </section>
 
-        {/* Right Sidebar (Recent Appointments, Documents) */}
+        {/* Right Sidebar (Recent Appointments, Documents, Health Program Alerts) */}
         <aside className="space-y-6">
           {/* Recent Appointments */}
           <Card>
@@ -131,6 +137,31 @@ export default function HomePage() {
             <CardFooter>
               <Button variant="outline" className="w-full" asChild>
                 <Link href="/documents">{t('viewAllDocuments')}</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Health Program Alerts */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">{t('healthProgramAlerts')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {healthProgramAlerts.map((alert) => (
+                <div key={alert.title} className="flex items-center gap-3">
+                   <div className="p-2.5 rounded-full bg-info-muted text-info-muted-foreground">
+                    <alert.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground">{alert.details}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/programs">{t('viewAllPrograms')}</Link>
               </Button>
             </CardFooter>
           </Card>
