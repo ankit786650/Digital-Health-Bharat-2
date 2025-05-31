@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card"; // CardHeader, CardTitle removed as not directly used for doc list header
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -13,9 +13,8 @@ import {
   Upload,
   StickyNote,
   Archive,
-  // For mapping doc types to icons
-  Image as ImageIcon, // Example, can refine
-  ShieldCheck,     // Example for Vaccination
+  Image as ImageIcon,
+  ShieldCheck,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -26,15 +25,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // Initial mock data
 const initialVisitsData = [
   { id: "1", date: "2024-05-15", doctorName: "Dr. Emily Carter", documents: [
-      { id: "doc1", name: "Blood Test Results", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
-      { id: "doc2", name: "Medication List", type: "Prescription", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
-      { id: "doc3", name: "X-Ray Scan", type: "Imaging", icon: ImageIcon, originalFile: null, documentDate: "2024-05-15" },
+      { id: "doc1", name: "Comprehensive Blood Test Results - Annual Checkup", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
+      { id: "doc2", name: "Medication List Adjustment for Hypertension", type: "Prescription", icon: FileText, originalFile: null, documentDate: "2024-05-15" },
+      { id: "doc3", name: "Chest X-Ray Scan - Follow-up on Respiratory Symptoms", type: "Imaging", icon: ImageIcon, originalFile: null, documentDate: "2024-05-15" },
     ], notes: [
-      { id: "note1", name: "Consultation Notes", type: "Visit Summary", icon: StickyNote, originalFile: null, documentDate: "2024-05-15" },
+      { id: "note1", name: "Consultation Notes Regarding Sleep Pattern Improvements", type: "Visit Summary", icon: StickyNote, originalFile: null, documentDate: "2024-05-15" },
     ]
   },
   { id: "2", date: "2024-04-20", doctorName: "Dr. John Doe", documents: [], notes: [] },
-  { id: "3", date: "2024-03-05", doctorName: "Dr. Alice Smith", documents: [{id: "doc4", name: "Follow-up Report", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-03-05"}], notes: [] },
+  { id: "3", date: "2024-03-05", doctorName: "Dr. Alice Smith", documents: [{id: "doc4", name: "Follow-up Report on Previous Condition", type: "Lab Report", icon: FileText, originalFile: null, documentDate: "2024-03-05"}], notes: [] },
 ];
 
 type DocumentOrNoteItem = { 
@@ -42,8 +41,8 @@ type DocumentOrNoteItem = {
   name: string; 
   type: string; 
   icon: React.ElementType;
-  originalFile: File | null; // Store the original File object
-  documentDate: string; // Date of the document itself
+  originalFile: File | null;
+  documentDate: string;
   doctorName?: string;
   visitReason?: string;
 };
@@ -64,7 +63,6 @@ export default function DocumentsPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  // Effect to select the first visit if visits data changes and none is selected
   useEffect(() => {
     if (visits.length > 0 && !selectedVisitId) {
       setSelectedVisitId(visits[0].id);
@@ -81,12 +79,12 @@ export default function DocumentsPage() {
   const mapDocumentTypeToIcon = (docType: string): React.ElementType => {
     switch(docType) {
       case "lab_report": return FileText;
-      case "prescription": return FileText; // Could use Pill icon from lucide-react if desired
+      case "prescription": return FileText;
       case "medical_imaging": return ImageIcon;
       case "consultation_notes": return StickyNote;
       case "discharge_summary": return FileText;
       case "vaccination_document": return ShieldCheck;
-      case "insurance_document": return FileText; // Could use Shield icon
+      case "insurance_document": return FileText;
       default: return FileText;
     }
   }
@@ -104,7 +102,7 @@ export default function DocumentsPage() {
     const newDocument: DocumentOrNoteItem = {
       id: `doc-${Date.now()}`,
       name: data.documentTitle,
-      type: data.documentType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format type string
+      type: data.documentType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       icon: mapDocumentTypeToIcon(data.documentType),
       originalFile: data.documentFile,
       documentDate: format(data.documentDate, "yyyy-MM-dd"),
@@ -112,7 +110,6 @@ export default function DocumentsPage() {
       visitReason: data.visitReason,
     };
     
-    // Add to documents or notes based on type
     const isNoteType = data.documentType === 'consultation_notes';
 
     setVisits(prevVisits => 
@@ -223,18 +220,18 @@ export default function DocumentsPage() {
                 <div>
                   <h3 className="text-foreground text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Documents</h3>
                   {selectedVisit.documents.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {selectedVisit.documents.map((doc) => (
-                        <Card key={doc.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                           <CardContent className="flex items-center gap-4 p-0 w-full">
-                            <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
+                        <Card key={doc.id} className="flex items-start gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
+                           <CardContent className="flex items-start gap-4 p-0 w-full">
+                            <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10 mt-1">
                               <doc.icon className="h-5 w-5" />
                             </div>
-                            <div className="flex flex-col justify-center overflow-hidden">
-                              <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{doc.name}</p>
-                              <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{doc.type}</p>
+                            <div className="flex flex-col justify-center flex-grow overflow-hidden">
+                              <p className="text-card-foreground text-base font-medium leading-normal">{doc.name}</p>
+                              <p className="text-muted-foreground text-xs font-normal leading-normal mt-1">{doc.type}</p>
                             </div>
-                            <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground">
+                            <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground shrink-0">
                               <MoreVertical className="h-5 w-5" />
                             </Button>
                           </CardContent>
@@ -248,18 +245,18 @@ export default function DocumentsPage() {
                 <div>
                   <h3 className="text-foreground text-lg font-semibold leading-tight tracking-[-0.015em] mb-3">Notes</h3>
                   {selectedVisit.notes.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {selectedVisit.notes.map((note) => (
-                         <Card key={note.id} className="flex items-center gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
-                           <CardContent className="flex items-center gap-4 p-0 w-full">
-                            <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10">
+                         <Card key={note.id} className="flex items-start gap-4 p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card">
+                           <CardContent className="flex items-start gap-4 p-0 w-full">
+                            <div className="text-primary-foreground flex items-center justify-center rounded-lg bg-primary shrink-0 size-10 mt-1">
                               <note.icon className="h-5 w-5" />
                             </div>
-                            <div className="flex flex-col justify-center overflow-hidden">
-                              <p className="text-card-foreground text-sm font-medium leading-normal line-clamp-1">{note.name}</p>
-                              <p className="text-muted-foreground text-xs font-normal leading-normal line-clamp-2">{note.type}</p>
+                            <div className="flex flex-col justify-center flex-grow overflow-hidden">
+                              <p className="text-card-foreground text-base font-medium leading-normal">{note.name}</p>
+                              <p className="text-muted-foreground text-xs font-normal leading-normal mt-1">{note.type}</p>
                             </div>
-                             <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground">
+                             <Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-accent-foreground shrink-0">
                               <MoreVertical className="h-5 w-5" />
                             </Button>
                           </CardContent>
@@ -284,5 +281,3 @@ export default function DocumentsPage() {
     </div>
   );
 }
-
-    
