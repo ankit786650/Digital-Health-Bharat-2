@@ -9,38 +9,38 @@ body {
 
 @layer base {
   :root {
-    --background: 220 20% 96.5%; /* Light gray page background (e.g., slate-100) */
-    --foreground: 222.2 84% 4.9%; /* Default dark text */
+    --background: 0 0% 100%; /* White page background, header background */
+    --foreground: 224 71% 4%; /* Dark text for high contrast */
 
-    --card: 0 0% 100%; /* White for cards, sidebar, main content panel */
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%; /* White for cards, sidebar */
+    --card-foreground: 224 71% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 224 71% 4%;
 
-    --primary: 174 46% 50%; /* Calming Teal #45B3A9 */
-    --primary-foreground: 0 0% 100%; /* White text for primary buttons */
+    --primary: 217 91% 60%; /* Accessible Blue for primary actions */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 210 40% 96.1%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 94%; /* Light gray for main content panel background */
+    --secondary-foreground: 224 71% 15%; /* Darker text on secondary bg */
 
-    --muted: 220 14% 93%; /* Subtle gray for muted backgrounds/hovers */
-    --muted-foreground: 220 9% 47%; /* Gray text for muted descriptions */
+    --muted: 220 14% 96.5%; /* Very light gray for subtle elements */
+    --muted-foreground: 220 9% 47%; /* Muted text color */
 
-    --accent: 0 73% 65%; /* Darker Coral #E56767 for better contrast */
-    --accent-foreground: 0 0% 100%; /* White text for accent elements */
+    --accent: 217 91% 90%; /* Light blue for hovers, active sidebar links */
+    --accent-foreground: 217 91% 45%; /* Blue text on light blue accent */
 
-    --destructive: 0 73% 65%; /* Darker Coral #E56767 */
-    --destructive-foreground: 0 0% 100%; /* White text for destructive elements */
+    --destructive: 0 72% 51%; /* Accessible Red */
+    --destructive-foreground: 0 0% 100%; /* White text on destructive */
 
-    --info: 210 70% 55%; /* Accessible Blue #3B82F6 */
-    --info-foreground: 0 0% 100%; /* White text for info elements */
-    --info-muted: 210 70% 95%; /* Light Blue #EBF2FE for info icon backgrounds */
-    --info-muted-foreground: 210 70% 50%; /* Darker Blue #3573DB for icons on info-muted bg */
+    --info: 200 85% 51%; /* Clear Blue for informational icons */
+    --info-foreground: 0 0% 100%;
+    --info-muted: 200 85% 95%; /* Light blue for info icon backgrounds */
+    --info-muted-foreground: 200 85% 40%; /* Darker blue for icons on info-muted bg */
 
-    --border: 220 13% 88%; /* Border color (e.g., slate-200/slate-300) */
+    --border: 220 13% 88%; /* Border color for cards, inputs */
     --input: 220 13% 88%;
-    --ring: 174 46% 50%; /* Primary color for focus rings */
+    --ring: 217 91% 60%; /* Primary blue for focus rings */
 
     --radius: 0.5rem;
 
@@ -52,32 +52,38 @@ body {
   }
 
   .dark {
-    /* Basic dark theme, can be expanded later */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 174 46% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 0 73% 60%; /* Adjusted Darker Coral for dark mode */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 73% 62%; /* Adjusted Darker Coral for dark mode */
-    --destructive-foreground: 0 0% 100%;
-    
-    --info: 210 70% 60%; /* Adjusted Blue for dark mode */
-    --info-foreground: 0 0% 100%;
-    --info-muted: 210 40% 15%; /* Darker Blue for info icon backgrounds in dark mode */
-    --info-muted-foreground: 210 70% 70%; /* Lighter Blue for icons on dark info-muted bg */
+    --background: 224 30% 12%; /* Dark blue-gray page background */
+    --foreground: 210 40% 98%; /* Light text */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 174 46% 50%;
+    --card: 224 30% 18%; /* Slightly lighter dark blue-gray for cards, sidebar */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 30% 18%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 65%; /* Blue, slightly lighter for dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 30% 15%; /* Dark gray for main content panel background */
+    --secondary-foreground: 210 40% 92%; /* Light text on dark secondary */
+
+    --muted: 215 28% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 40% 30%; /* Muted dark blue for hovers */
+    --accent-foreground: 210 40% 98%; /* Light text on dark accent */
+
+    --destructive: 0 70% 60%; /* Red for dark mode */
+    --destructive-foreground: 0 0% 100%;
+
+    --info: 200 80% 65%;
+    --info-foreground: 0 0% 100%;
+    --info-muted: 200 35% 20%;
+    --info-muted-foreground: 200 75% 75%;
+
+    --border: 215 25% 28%; /* Border color for dark mode */
+    --input: 215 25% 28%;
+    --ring: 217 91% 65%; /* Primary blue for focus rings */
   }
 }
 
@@ -86,7 +92,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground; /* Body background is light gray */
+    @apply bg-background text-foreground; /* Body background is white */
   }
   h1,h2,h3,h4,h5,h6 {
     @apply text-foreground;
