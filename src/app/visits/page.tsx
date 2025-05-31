@@ -6,7 +6,7 @@ import { AddVisitForm } from "@/components/visits/AddVisitForm";
 import type { Visit } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Stethoscope } from "lucide-react"; 
+import { Plus, Stethoscope, Loader2 } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 
@@ -21,6 +21,7 @@ const initialVisits: Visit[] = [
 export default function VisitsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,11 +32,14 @@ export default function VisitsPage() {
       // Initialize with default data if no local storage data
       setVisits(initialVisits.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("meditrack_visits", JSON.stringify(visits));
-  }, [visits]);
+    if (!isLoading) {
+      localStorage.setItem("meditrack_visits", JSON.stringify(visits));
+    }
+  }, [visits, isLoading]);
 
   const handleAddVisit = (newVisit: Omit<Visit, 'id' | 'attachedDocuments'> & { attachedDocuments?: File[] }) => {
     const visitWithId: Visit = {
@@ -60,6 +64,7 @@ export default function VisitsPage() {
         <div className="relative">
           <Button 
             onClick={() => setShowAddForm(prev => !prev)} 
+            disabled={isLoading}
             className="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary text-primary-foreground text-sm font-semibold leading-normal shadow-sm hover:bg-primary/90 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Plus className="h-4 w-4" />
@@ -78,36 +83,43 @@ export default function VisitsPage() {
         <CardHeader className="px-6 py-4 border-b border-border">
           <CardTitle className="text-xl font-semibold leading-tight tracking-tight text-card-foreground">Recent Appointments</CardTitle>
         </CardHeader>
-        <CardContent className="p-0 divide-y divide-border">
-          {visits.length === 0 && !showAddForm ? (
-            <div className="text-center py-10 px-6 text-muted-foreground">
-              <Stethoscope className="h-12 w-12 mx-auto mb-4" />
-              <p>No appointments recorded yet.</p>
-              <p className="text-sm">Click "+ Add Appointment" to log your first appointment.</p>
-            </div>
-          ) : (
-            visits.map((visit) => (
-              <div key={visit.id} className="flex items-start gap-4 p-6 hover:bg-secondary transition-colors duration-150">
-                <div className="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-12 mt-1">
-                  <Stethoscope className="h-6 w-6" />
-                </div>
-                <div className="flex flex-1 flex-col">
-                  <p className="text-base font-semibold leading-normal mb-1 text-foreground">
-                    {format(parseISO(visit.date), "MMMM d, yyyy")}
-                  </p>
-                  {visit.notes && (
-                    <p className="text-sm font-normal leading-relaxed mb-1 text-muted-foreground">
-                      Clinical notes: {visit.notes}
-                    </p>
-                  )}
-                  <p className="text-sm font-medium leading-normal text-muted-foreground/80">
-                    Dr. {visit.doctorName} - {visit.specialization || "N/A"}
-                  </p>
-                </div>
+        {isLoading ? (
+           <CardContent className="p-6 text-center">
+            <Loader2 className="h-8 w-8 mx-auto text-muted-foreground mb-4 animate-spin" />
+            <p className="text-muted-foreground">Loading appointments...</p>
+          </CardContent>
+        ) : (
+          <CardContent className="p-0 divide-y divide-border">
+            {visits.length === 0 && !showAddForm ? (
+              <div className="text-center py-10 px-6 text-muted-foreground">
+                <Stethoscope className="h-12 w-12 mx-auto mb-4" />
+                <p>No appointments recorded yet.</p>
+                <p className="text-sm">Click "+ Add Appointment" to log your first appointment.</p>
               </div>
-            ))
-          )}
-        </CardContent>
+            ) : (
+              visits.map((visit) => (
+                <div key={visit.id} className="flex items-start gap-4 p-6 hover:bg-secondary transition-colors duration-150">
+                  <div className="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-12 mt-1">
+                    <Stethoscope className="h-6 w-6" />
+                  </div>
+                  <div className="flex flex-1 flex-col">
+                    <p className="text-base font-semibold leading-normal mb-1 text-foreground">
+                      {format(parseISO(visit.date), "MMMM d, yyyy")}
+                    </p>
+                    {visit.notes && (
+                      <p className="text-sm font-normal leading-relaxed mb-1 text-muted-foreground">
+                        Clinical notes: {visit.notes}
+                      </p>
+                    )}
+                    <p className="text-sm font-medium leading-normal text-muted-foreground/80">
+                      Dr. {visit.doctorName} - {visit.specialization || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        )}
       </Card>
     </div>
   );

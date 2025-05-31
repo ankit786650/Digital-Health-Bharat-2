@@ -23,7 +23,8 @@ import {
   FilePenLine,
   Trash2,
   ScanLine,
-  Pill
+  Pill,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -43,6 +44,7 @@ export default function RemindersPage() {
   const [showAddManualForm, setShowAddManualForm] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [reminderToDelete, setReminderToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Effect to load reminders from local storage
@@ -51,12 +53,16 @@ export default function RemindersPage() {
     if (storedReminders) {
       setReminders(JSON.parse(storedReminders));
     }
+    setIsLoading(false);
   }, []);
 
   // Effect to save reminders to local storage
   useEffect(() => {
-    localStorage.setItem("mediminder_reminders", JSON.stringify(reminders));
-  }, [reminders]);
+    // Only save if not loading to prevent overwriting initial empty state before load
+    if (!isLoading) {
+      localStorage.setItem("mediminder_reminders", JSON.stringify(reminders));
+    }
+  }, [reminders, isLoading]);
 
   const handleAddReminder = (newReminder: MedicationReminder) => {
     setReminders((prev) => [newReminder, ...prev].sort((a,b) => (new Date(b.startDate || 0).getTime()) - (new Date(a.startDate || 0).getTime()))); // Sort by most recent or start date
@@ -144,7 +150,7 @@ export default function RemindersPage() {
           <Button 
             onClick={() => { setShowUploadForm(true); setShowAddManualForm(false); }} 
             variant="outline"  
-            disabled={showAddManualForm || showUploadForm}
+            disabled={showAddManualForm || showUploadForm || isLoading}
             className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
           >
             <ScanLine className="mr-2 h-4 w-4" /> Scan Prescription
@@ -152,7 +158,7 @@ export default function RemindersPage() {
           <Button 
             onClick={() => { setShowAddManualForm(true); setShowUploadForm(false); }} 
             className="bg-primary text-primary-foreground hover:bg-primary/90" 
-            disabled={showAddManualForm || showUploadForm}
+            disabled={showAddManualForm || showUploadForm || isLoading}
           >
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Reminder
           </Button>
@@ -187,7 +193,14 @@ export default function RemindersPage() {
 
       <div>
         <h2 className="text-2xl font-semibold mb-6">All Reminders</h2>
-        {reminders.length === 0 && !showAddManualForm && !showUploadForm ? (
+        {isLoading ? (
+          <Card className="text-center py-10 shadow-sm border-border">
+            <CardContent className="flex flex-col items-center justify-center">
+              <Loader2 className="h-12 w-12 mx-auto text-muted-foreground mb-4 animate-spin" />
+              <p className="text-muted-foreground text-lg font-medium">Loading reminders...</p>
+            </CardContent>
+          </Card>
+        ) : reminders.length === 0 && !showAddManualForm && !showUploadForm ? (
            <Card className="text-center py-10 shadow-sm border-border">
             <CardContent className="flex flex-col items-center justify-center">
               <Pill className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -278,5 +291,3 @@ export default function RemindersPage() {
     </div>
   );
 }
-
-    
