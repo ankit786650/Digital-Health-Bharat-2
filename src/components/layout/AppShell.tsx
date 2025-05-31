@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
+  LayoutDashboard, // Added Dashboard icon
   CalendarDays,
   Pill,
   FileText,
@@ -27,6 +28,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard }, // Added Dashboard link
   { href: '/visits', label: 'Appointments', icon: CalendarDays },
   { href: '/reminders', label: 'Medication Reminder', icon: Pill },
   { href: '/documents', label: 'Medical Documents', icon: FileText },
