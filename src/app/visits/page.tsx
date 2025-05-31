@@ -112,7 +112,7 @@ export default function VisitsPage() {
                       </p>
                     )}
                     <p className="text-sm font-medium leading-normal text-muted-foreground/80">
-                      Dr. {visit.doctorName} - {visit.specialization || "N/A"}
+                      {visit.doctorName} - {visit.specialization || "N/A"}
                     </p>
                   </div>
                 </div>

@@ -64,7 +64,7 @@ const transformInitialData = (rawData: typeof initialVisitsDataRaw): DocumentIte
       documents.push({
         ...doc,
         documentDate: adjustedDocDate, // Use adjusted date
-        doctorName: doc.doctorName || visit.doctorName,
+        doctorName: visit.doctorName, // Use doctor name from the visit for the document
         originalVisitDate: adjustedVisitDate, // Store adjusted original visit date
       });
     });
@@ -179,7 +179,7 @@ export default function DocumentsPage() {
                         {doc.type} - {format(parseISO(doc.documentDate), "MMM d, yyyy")}
                       </p>
                       {doc.doctorName && (
-                         <p className="text-muted-foreground text-xs font-normal leading-normal mt-0.5">Dr. {doc.doctorName}</p>
+                         <p className="text-muted-foreground text-xs font-normal leading-normal mt-0.5">{doc.doctorName}</p>
                       )}
                     </div>
                     <Button 
@@ -208,4 +208,3 @@ export default function DocumentsPage() {
     </div>
   );
 }
-
