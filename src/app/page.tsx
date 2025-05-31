@@ -1,12 +1,13 @@
 
-"use client"; // Added "use client" for useLanguage hook
+"use client"; 
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, MoreHorizontal, Heart, User, FileText as DocumentIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext"; // Added import
+import { useLanguage } from "@/contexts/LanguageContext"; 
+import { useToast } from "@/hooks/use-toast"; // Added import
 
 const upcomingMedications = [
   { name: "Amoxicillin", time: "10:00 AM", icon: PlusCircle },
@@ -25,7 +26,15 @@ const recentDocuments = [
 ];
 
 export default function HomePage() {
-  const { t } = useLanguage(); // Use language context
+  const { t } = useLanguage(); 
+  const { toast } = useToast(); // Initialize useToast
+
+  const handleMoreOptionsClick = (medicationName: string) => {
+    toast({
+      title: "Coming Soon!",
+      description: `More options for ${medicationName} are under development.`,
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -47,7 +56,7 @@ export default function HomePage() {
               {upcomingMedications.map((med) => (
                 <div key={med.name} className="flex items-center justify-between p-3 bg-card rounded-lg border hover:shadow-sm transition-shadow">
                   <div className="flex items-center gap-4">
-                    <div className="bg-blue-100 text-primary p-2.5 rounded-full">
+                    <div className="bg-primary/10 text-primary p-2.5 rounded-full"> {/* Changed bg-blue-100 to bg-primary/10 */}
                       <med.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -55,7 +64,12 @@ export default function HomePage() {
                       <p className="text-xs text-muted-foreground">{med.time}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
+                  <Button 
+                    variant="ghost" 
+                    size="icon-sm" 
+                    className="text-muted-foreground"
+                    onClick={() => handleMoreOptionsClick(med.name)} // Added onClick handler
+                  >
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </div>
