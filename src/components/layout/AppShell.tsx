@@ -18,14 +18,13 @@ import {
   Settings, // Ensure settings icon is imported if used directly
   type LucideIcon
 } from 'lucide-react';
-// import { Toaster } from "@/components/ui/toaster"; // Removed redundant Toaster
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageToggle } from "@/components/language/LanguageToggle";
-import { useLanguage } from "@/contexts/LanguageContext"; // Added import
+import { useLanguage } from "@/contexts/LanguageContext"; 
 
 interface NavItemConfig {
   href: string;
-  labelKey: import('@/locales/translations').TranslationKey; // Use TranslationKey
+  labelKey: import('@/locales/translations').TranslationKey; 
   icon: LucideIcon;
 }
 
@@ -34,8 +33,8 @@ const navItemConfigs: NavItemConfig[] = [
   { href: '/visits', labelKey: 'appointments', icon: CalendarDays },
   { href: '/reminders', labelKey: 'medicationReminder', icon: Pill },
   { href: '/documents', labelKey: 'medicalDocuments', icon: FileText },
-  { href: '/analytics', labelKey: 'analytics', icon: BarChart3 }, // Assuming 'analytics' key exists
-  { href: '/nearby-facility', labelKey: 'nearbyFacility', icon: MapPin }, // Assuming 'nearbyFacility' key exists
+  { href: '/analytics', labelKey: 'analytics', icon: BarChart3 }, 
+  { href: '/nearby-facility', labelKey: 'nearbyFacility', icon: MapPin }, 
   { href: '/profile', labelKey: 'profile', icon: User },
 ];
 
@@ -45,11 +44,11 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const { t } = useLanguage(); // Get translation function
+  const { t } = useLanguage(); 
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r"> {/* Sidebar (white) */}
+      <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r"> 
         <div className="flex items-center gap-3 mb-8 p-2">
           <Avatar className="h-10 w-10">
             <AvatarImage src="https://placehold.co/40x40.png" alt={t('kishan')} data-ai-hint="man face" />
@@ -68,8 +67,8 @@ export function AppShell({ children }: AppShellProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-accent text-accent-foreground" // Accent is light blue, text is darker blue
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground" // Muted text, hover to lighter accent
+                    ? "bg-accent text-accent-foreground" 
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground" 
                 )}
               >
                 <item.icon className={cn("h-5 w-5", isActive ? "text-accent-foreground" : "text-muted-foreground")} />
@@ -96,7 +95,7 @@ export function AppShell({ children }: AppShellProps) {
             href="/logout" 
             className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 w-full",
-                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" // Destructive color for logout
+                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
             )}
           >
             <LogOut className="h-5 w-5" />
@@ -105,16 +104,15 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </aside>
 
-      <div className="flex-1 ml-64 flex flex-col"> {/* This column takes remaining space */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b bg-background px-6"> {/* Header bar (white) */}
+      <div className="flex-1 ml-64 flex flex-col"> 
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b bg-background px-6"> 
             <LanguageToggle />
             <ThemeToggle />
         </header>
-        <main className="flex-1 p-8 overflow-y-auto bg-secondary"> {/* Main content area (light gray) */}
+        <main className="flex-1 p-8 overflow-y-auto bg-background"> {/* Changed bg-secondary to bg-background */}
             {children}
         </main>
       </div>
-      {/* <Toaster /> Removed redundant Toaster */}
     </div>
   );
 }
