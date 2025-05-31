@@ -154,7 +154,7 @@ export default function MedicineSideEffectsMonitorPage() {
                     variant={selectedFeeling === emoji ? "default" : "outline"}
                     size="lg"
                     onClick={() => setSelectedFeeling(emoji)}
-                    className="text-2xl p-3 aspect-square flex-1 hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground"
+                    className="text-2xl p-3 aspect-square hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground"
                   >
                     {emoji}
                   </Button>
@@ -207,7 +207,7 @@ export default function MedicineSideEffectsMonitorPage() {
                             variant={medicationExperience === emoji ? "default" : "outline"}
                             size="lg"
                             onClick={() => setMedicationExperience(emoji)}
-                            className="text-2xl p-3 aspect-square flex-1 hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground"
+                            className="text-2xl p-3 aspect-square hover:bg-primary/10 data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground"
                         >
                             {emoji}
                         </Button>
