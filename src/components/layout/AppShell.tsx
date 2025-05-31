@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { LanguageToggle } from "@/components/language/LanguageToggle"; // Added import
 
 interface NavItem {
   href: string;
@@ -89,7 +90,6 @@ export function AppShell({ children }: AppShellProps) {
                 {/* <Settings className="h-5 w-5" />  */}
                 <span>Settings</span> 
               </Link>
-          {/* ThemeToggle removed from here */}
           <Link
             href="/logout" // Assuming a logout page or functionality
             className={cn(
@@ -104,7 +104,8 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="flex-1 ml-64 flex flex-col bg-background">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-1 border-b bg-background px-6">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b bg-background px-6"> {/* Added gap-2 */}
+            <LanguageToggle /> {/* Added LanguageToggle */}
             <ThemeToggle />
         </header>
         <main className="flex-1 p-8 overflow-y-auto bg-card">
