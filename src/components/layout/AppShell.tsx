@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, // Added Dashboard icon
+  LayoutDashboard,
   CalendarDays,
   Pill,
   FileText,
@@ -19,7 +19,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
-
+import { ThemeToggle } from "@/components/theme/ThemeToggle"; // Import ThemeToggle
 
 interface NavItem {
   href: string;
@@ -28,7 +28,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard }, // Added Dashboard link
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/visits', label: 'Appointments', icon: CalendarDays },
   { href: '/reminders', label: 'Medication Reminder', icon: Pill },
   { href: '/documents', label: 'Medical Documents', icon: FileText },
@@ -45,10 +45,8 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-background"> {/* bg-background is light gray */}
-      {/* Sidebar */}
-      <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r"> {/* bg-card is white */}
-        {/* User Info */}
+    <div className="flex min-h-screen bg-background">
+      <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r">
         <div className="flex items-center gap-3 mb-8 p-2">
           <Avatar className="h-10 w-10">
             <AvatarImage src="https://placehold.co/40x40.png" alt="Kishan" data-ai-hint="man face" />
@@ -57,7 +55,6 @@ export function AppShell({ children }: AppShellProps) {
           <span className="font-semibold text-lg text-foreground">Kishan</span>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-grow space-y-1">
           {navItems.map((item) => {
             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
@@ -79,11 +76,14 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </nav>
 
-        {/* Log Out */}
-        <div className="mt-auto">
+        <div className="mt-auto space-y-1"> {/* Added space-y-1 for spacing between items */}
+          <ThemeToggle /> {/* Add ThemeToggle here */}
           <Link
-            href="/logout" // Replace with actual logout path/handler
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            href="/logout"
+            className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "text-destructive hover:bg-destructive/10"
+            )}
           >
             <LogOut className="h-5 w-5" />
             Log Out
@@ -91,8 +91,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 ml-64 p-8 overflow-y-auto bg-card"> {/* bg-card is white for main content panel */}
+      <main className="flex-1 ml-64 p-8 overflow-y-auto bg-card">
         {children}
       </main>
       <Toaster />
