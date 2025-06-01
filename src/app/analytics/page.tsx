@@ -37,15 +37,15 @@ const generateCalendarDays = (year: number, month: number): CalendarDay[] => {
     daysArray.push({ date: null, isCurrentMonth: false });
   }
 
-  // Add days of the month
+  // Add days of the month based on the provided image for October 2024
   for (let i = 1; i <= daysInMonth; i++) {
     let status: CalendarDay['status'] = 'none';
-    if (i <= 20 && month === 9) { // Mock data for October
-        if (i % 5 === 0 && i !== 15) status = 'missed';
-        else if (i % 3 === 0 || i % 7 === 0) status = 'taken';
+    if (month === 9 && year === 2024) { // October 2024
+        if (i === 5) status = 'selected';
+        else if ([4, 6, 10, 16, 27].includes(i)) status = 'taken';
+        else if ([7, 20].includes(i)) status = 'missed';
     }
-    if (month === 9 && i === 11) status = 'selected'; // October 11th selected
-
+    
     daysArray.push({
       date: i,
       status: status,
@@ -69,14 +69,6 @@ const mockOctoberData: CalendarMonthData = {
   days: generateCalendarDays(2024, 9), // Month is 0-indexed, so 9 is October
   dayLabels: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
 };
-
-const mockNovemberData: CalendarMonthData = {
-  name: "November",
-  year: 2024,
-  days: generateCalendarDays(2024, 10), // 10 is November
-  dayLabels: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
-};
-
 
 const adherenceScores = [
     { title: "Overall Adherence", score: 85, Icon: Smile, color: "text-blue-500" },
@@ -107,8 +99,8 @@ const healthVitalsData: VitalTrend[] = [
     trendText: "Getting Better",
     feedback: "Your blood pressure is looking great. Trend is improving.",
     Icon: ArrowDown,
-    colorClass: 'text-green-600',
-    valueColorClass: 'text-green-600',
+    colorClass: 'text-green-600 dark:text-green-400',
+    valueColorClass: 'text-green-600 dark:text-green-400',
   },
   {
     id: "weight",
@@ -119,8 +111,8 @@ const healthVitalsData: VitalTrend[] = [
     trendText: "Needs Attention",
     feedback: "Your weight has slightly increased. Consider reviewing your diet.",
     Icon: ArrowRight,
-    colorClass: 'text-amber-600',
-    valueColorClass: 'text-amber-600',
+    colorClass: 'text-amber-600 dark:text-amber-400',
+    valueColorClass: 'text-amber-600 dark:text-amber-400',
   },
   {
     id: "sugar",
@@ -131,8 +123,8 @@ const healthVitalsData: VitalTrend[] = [
     trendText: "High - Action Required",
     feedback: "Your blood sugar is higher than usual. Please monitor closely.",
     Icon: ArrowUp,
-    colorClass: 'text-red-600',
-    valueColorClass: 'text-red-600',
+    colorClass: 'text-red-600 dark:text-red-400',
+    valueColorClass: 'text-red-600 dark:text-red-400',
   },
 ];
 
@@ -140,6 +132,9 @@ export default function AnalyticsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
+  // For now, we'll just display October. Month navigation can be added later.
+  const [currentCalendarData, setCurrentCalendarData] = useState<CalendarMonthData>(mockOctoberData);
+
 
   useEffect(() => {
     setMounted(true);
@@ -157,48 +152,60 @@ export default function AnalyticsPage() {
 
   const CalendarView = ({ data }: { data: CalendarMonthData }) => (
     <Card className="w-full shadow-lg">
-      <CardHeader className="flex flex-row items-center justify-between px-4 pt-4 pb-3">
-        <Button variant="ghost" size="icon-sm" aria-label="Previous month">
+      <CardHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4">
+        <Button variant="ghost" size="icon" aria-label="Previous month" onClick={() => toast({ title: "Navigation", description: "Previous month (coming soon)"})}>
           <ChevronLeft className="h-5 w-5" />
         </Button>
-        <CardTitle className="text-lg font-semibold text-center">
+        <CardTitle className="text-xl font-semibold text-center text-foreground">
           {data.name} {data.year}
         </CardTitle>
-        <Button variant="ghost" size="icon-sm" aria-label="Next month">
+        <Button variant="ghost" size="icon" aria-label="Next month" onClick={() => toast({ title: "Navigation", description: "Next month (coming soon)"})}>
           <ChevronRight className="h-5 w-5" />
         </Button>
       </CardHeader>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-2">
+      <CardContent className="p-6">
+        <div className="grid grid-cols-7 gap-1 text-center text-sm text-muted-foreground mb-3">
           {data.dayLabels.map((label) => (
             <div key={label}>{label}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-x-1 gap-y-2">
+        <div className="grid grid-cols-7 gap-x-1.5 gap-y-2.5">
           {data.days.map((day, index) => (
             <div key={index} className={cn(
-                "flex flex-col items-center justify-center h-10 w-full rounded-md relative",
+                "flex flex-col items-center justify-center h-12 w-full rounded-md relative text-sm",
                  day.status === 'selected' && 'bg-primary text-primary-foreground',
-                 day.isToday && day.status !== 'selected' && 'border-2 border-blue-300' 
+                 day.status === 'taken' && 'bg-green-200/70 dark:bg-green-700/50 text-green-800 dark:text-green-200',
+                 day.status === 'missed' && 'bg-red-200/70 dark:bg-red-700/50 text-red-800 dark:text-red-200',
+                 day.isToday && day.status !== 'selected' && !['taken', 'missed'].includes(day.status || 'none') && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
+                 day.date === null ? 'opacity-0 pointer-events-none' : 'hover:bg-accent/50 dark:hover:bg-accent/30 transition-colors'
             )}>
               {day.date !== null && (
                 <>
                   <span className={cn(
-                    "text-sm",
                     !day.isCurrentMonth && "text-muted-foreground/50",
                   )}>
                     {day.date}
                   </span>
-                  {day.isCurrentMonth && day.status && day.status !== 'none' && day.status !== 'selected' && (
-                     <span className={cn("absolute bottom-1.5 h-1.5 w-1.5 rounded-full",
-                        day.status === 'taken' && 'bg-green-500',
-                        day.status === 'missed' && 'bg-red-500',
+                  {day.isCurrentMonth && (day.status === 'taken' || day.status === 'missed') && (
+                     <span className={cn("mt-0.5 h-1.5 w-1.5 rounded-full",
+                        day.status === 'taken' && 'bg-green-600 dark:bg-green-400',
+                        day.status === 'missed' && 'bg-red-600 dark:bg-red-400',
                      )}></span>
                   )}
                 </>
               )}
             </div>
           ))}
+        </div>
+        <div className="flex justify-center items-center gap-x-6 gap-y-2 mt-6 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                <span>Taken</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                <span>Missed</span>
+            </div>
         </div>
       </CardContent>
     </Card>
@@ -240,15 +247,15 @@ export default function AnalyticsPage() {
         </div>
       </section>
 
-      <div className="flex items-center gap-3 mb-2 pt-4 border-t">
-        <h1 className="text-3xl font-bold text-foreground">Medication Adherence</h1>
-      </div>
-
-      {/* Calendar Section */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CalendarView data={mockOctoberData} />
-        <CalendarView data={mockNovemberData} />
+      {/* Medication Adherence and Calendar Section */}
+      <section>
+        <div className="mb-4">
+            <h1 className="text-3xl font-bold text-foreground">Medication Adherence</h1>
+            <p className="text-muted-foreground mt-1">Track your medication intake and stay on schedule.</p>
+        </div>
+        <CalendarView data={currentCalendarData} />
       </section>
+
 
       {/* Adherence Score Section */}
       <section>
@@ -273,7 +280,7 @@ export default function AnalyticsPage() {
         <h2 className="text-2xl font-semibold mb-4 text-foreground">Trend Alerts</h2>
         <Card className="shadow-lg overflow-hidden">
             <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-shrink-0 text-red-500">
+                <div className="flex-shrink-0 text-red-500 dark:text-red-400">
                     <AlertTriangle className="h-10 w-10" />
                 </div>
                 <div className="flex-grow">
@@ -304,4 +311,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-
