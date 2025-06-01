@@ -2,10 +2,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress"; // Keep for potential future use, but not in current design
-import { BarChart3, CalendarDays, ChevronLeft, ChevronRight, ThumbsUp, AlertTriangle, Smile, Frown, ArrowRight } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronLeft, ChevronRight, ThumbsUp, AlertTriangle, Smile, Frown, ArrowRight, ArrowDown, ArrowUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -84,6 +84,58 @@ const adherenceScores = [
     { title: "Evening Medication", score: 78, Icon: Frown, color: "text-orange-500" },
 ];
 
+interface VitalTrend {
+  id: string;
+  title: string;
+  value: string;
+  unit: string;
+  trendStatus: 'improving' | 'stable_attention' | 'action_required';
+  trendText: string;
+  feedback: string;
+  Icon: LucideIcon;
+  colorClass: string;
+  valueColorClass: string;
+}
+
+const healthVitalsData: VitalTrend[] = [
+  {
+    id: "bp",
+    title: "Blood Pressure",
+    value: "118/78",
+    unit: "mmHg",
+    trendStatus: 'improving',
+    trendText: "Getting Better",
+    feedback: "Your blood pressure is looking great. Trend is improving.",
+    Icon: ArrowDown,
+    colorClass: 'text-green-600',
+    valueColorClass: 'text-green-600',
+  },
+  {
+    id: "weight",
+    title: "Weight",
+    value: "152",
+    unit: "lbs",
+    trendStatus: 'stable_attention',
+    trendText: "Needs Attention",
+    feedback: "Your weight has slightly increased. Consider reviewing your diet.",
+    Icon: ArrowRight,
+    colorClass: 'text-amber-600',
+    valueColorClass: 'text-amber-600',
+  },
+  {
+    id: "sugar",
+    title: "Blood Sugar",
+    value: "105",
+    unit: "mg/dL",
+    trendStatus: 'action_required',
+    trendText: "High - Action Required",
+    feedback: "Your blood sugar is higher than usual. Please monitor closely.",
+    Icon: ArrowUp,
+    colorClass: 'text-red-600',
+    valueColorClass: 'text-red-600',
+  },
+];
+
 export default function AnalyticsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -127,7 +179,7 @@ export default function AnalyticsPage() {
             <div key={index} className={cn(
                 "flex flex-col items-center justify-center h-10 w-full rounded-md relative",
                  day.status === 'selected' && 'bg-primary text-primary-foreground',
-                 day.isToday && day.status !== 'selected' && 'border-2 border-blue-300' // Example: border for today if not selected
+                 day.isToday && day.status !== 'selected' && 'border-2 border-blue-300' 
             )}>
               {day.date !== null && (
                 <>
@@ -155,7 +207,40 @@ export default function AnalyticsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
-      <div className="flex items-center gap-3 mb-2">
+      
+      {/* Health Vitals Trends Section */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Health Vitals Trends</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          {healthVitalsData.map((vital) => (
+            <Card key={vital.id} className="shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium text-muted-foreground">{vital.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className={cn("text-4xl font-bold", vital.valueColorClass)}>
+                  {vital.value} <span className="text-lg font-normal text-muted-foreground">{vital.unit}</span>
+                </p>
+                <div className={cn("flex items-center gap-1.5 text-sm font-medium", vital.colorClass)}>
+                  <vital.Icon className="h-4 w-4" />
+                  <span>{vital.trendText}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-normal">{vital.feedback}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="flex justify-center gap-3">
+            <Button variant="outline" onClick={() => toast({ title: "Navigation", description: "Earlier data (coming soon)"})}>
+                <ChevronLeft className="h-4 w-4 mr-1" /> Earlier
+            </Button>
+            <Button onClick={() => toast({ title: "Navigation", description: "Later data (coming soon)"})} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Later <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+        </div>
+      </section>
+
+      <div className="flex items-center gap-3 mb-2 pt-4 border-t">
         <h1 className="text-3xl font-bold text-foreground">Medication Adherence</h1>
       </div>
 
