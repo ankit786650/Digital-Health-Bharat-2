@@ -38,6 +38,10 @@ const healthSummarySchema = z.object({
   bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"], {
     required_error: "Blood group is required.",
   }),
+  emergencyContact1Name: z.string().optional(),
+  emergencyContact1Phone: z.string().optional(), // Consider adding phone validation if needed
+  emergencyContact2Name: z.string().optional(),
+  emergencyContact2Phone: z.string().optional(), // Consider adding phone validation if needed
 });
 
 type HealthSummaryFormValues = z.infer<typeof healthSummarySchema>;
@@ -61,7 +65,7 @@ function mapProfileGenderToQrSex(gender?: string): "Male" | "Female" | "Other" |
     case "male": return "Male";
     case "female": return "Female";
     case "other": return "Other";
-    default: return undefined; // Handles "prefer_not_to_say" or other unmapped values
+    default: return undefined;
   }
 }
 
@@ -90,6 +94,10 @@ const defaultProfileData = {
   dateOfBirth: new Date("1990-07-22"),
   gender: "male",
   bloodType: "o_pos",
+  emergencyContact1Name: "Jane Doe",
+  emergencyContact1Phone: "(555) 987-6543",
+  emergencyContact2Name: "John Smith",
+  emergencyContact2Phone: "(555) 111-2222",
 };
 
 export default function HealthSummaryQrPage() {
@@ -106,9 +114,13 @@ export default function HealthSummaryQrPage() {
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: calculatedAge, // Will be undefined if DOB missing, form validation will catch
-      sex: mappedSex,       // Will be undefined if unmappable, form validation will catch
-      bloodGroup: mappedBloodGroup, // Will be undefined if unmappable, form validation will catch
+      age: calculatedAge,
+      sex: mappedSex,
+      bloodGroup: mappedBloodGroup,
+      emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
+      emergencyContact1Phone: defaultProfileData.emergencyContact1Phone || "",
+      emergencyContact2Name: defaultProfileData.emergencyContact2Name || "",
+      emergencyContact2Phone: defaultProfileData.emergencyContact2Phone || "",
     },
   });
 
@@ -247,6 +259,58 @@ export default function HealthSummaryQrPage() {
                           <SelectItem value="Unknown">Unknown</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact1Name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emergency Contact 1: Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Jane Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact1Phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emergency Contact 1: Phone</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="e.g., (555) 987-6543" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact2Name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emergency Contact 2: Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., John Smith" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContact2Phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emergency Contact 2: Phone</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="e.g., (555) 111-2222" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
