@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
-  useSidebar, // Import useSidebar to access sidebar state if needed directly
+  useSidebar, 
 } from '@/components/ui/sidebar';
 
 interface NavItemConfig {
@@ -63,7 +63,7 @@ function AppShellContent({ children }: AppShellProps) {
   const pathname = usePathname();
   const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const { state: sidebarState } = useSidebar(); // Get sidebar state
+  const { state: sidebarState } = useSidebar(); 
 
   useEffect(() => {
     setMounted(true);
@@ -75,7 +75,7 @@ function AppShellContent({ children }: AppShellProps) {
       if (labelKey === 'healthQrCode') return 'Health QR Code';
       return labelKey.toString().charAt(0).toUpperCase() + labelKey.toString().slice(1);
     }
-    if (labelKey === 'monitor') return 'Monitor';
+    if (labelKey === 'monitor') return 'Monitor'; // Assuming 'Monitor' doesn't need translation or key exists.
     if (labelKey === 'healthQrCode') return t('healthQrCode');
     return t(labelKey as import('@/locales/translations').TranslationKey);
   };
@@ -92,7 +92,6 @@ function AppShellContent({ children }: AppShellProps) {
               <AvatarImage src="https://placehold.co/40x40.png" alt={userName} data-ai-hint="man face" />
               <AvatarFallback>{userFallback}</AvatarFallback>
             </Avatar>
-            {/* The span containing the name is managed by ui/sidebar for visibility */}
             <span className="font-semibold text-lg text-foreground">
               {userName}
             </span>
@@ -155,10 +154,12 @@ function AppShellContent({ children }: AppShellProps) {
       </Sidebar>
 
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-2 border-b bg-background px-6">
-          <SidebarTrigger className="mr-auto" />
-          <LanguageToggle />
-          <ThemeToggle />
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b bg-background px-6">
+          <SidebarTrigger />
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
         </header>
         <main className="flex-1 p-8 overflow-y-auto bg-background">
           {children}
@@ -171,7 +172,7 @@ function AppShellContent({ children }: AppShellProps) {
 export function AppShell({ children }: AppShellProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen bg-background"> {/* This div is essential for SidebarProvider structure */}
+      <div className="flex min-h-screen bg-background">
         <AppShellContent>{children}</AppShellContent>
       </div>
     </SidebarProvider>
