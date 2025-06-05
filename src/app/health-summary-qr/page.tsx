@@ -31,13 +31,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const healthSummarySchema = z.object({
   fullName: z.string().min(1, "Full name is required."),
-  age: z.coerce.number().int().positive("Age must be a positive number.").min(0).max(150),
+  age: z.coerce.number().int().positive("Age must be a positive number.").min(0).max(150).optional(),
   sex: z.enum(["Male", "Female", "Other"], {
     required_error: "Sex is required.",
-  }),
+  }).optional(),
   bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"], {
     required_error: "Blood group is required.",
-  }),
+  }).optional(),
   emergencyContact1Name: z.string().optional(),
   emergencyContact1Phone: z.string().optional(),
   emergencyContact2Name: z.string().optional(),
@@ -102,7 +102,6 @@ export default function HealthSummaryQrPage() {
   const { toast } = useToast();
 
   const constructedFullName = `${defaultProfileData.firstName}${defaultProfileData.middleName ? ` ${defaultProfileData.middleName}` : ""} ${defaultProfileData.lastName}`;
-  const calculatedAge = calculateAge(defaultProfileData.dateOfBirth);
   const mappedSex = mapProfileGenderToQrSex(defaultProfileData.gender);
   const mappedBloodGroup = mapProfileBloodTypeToQrBloodGroup(defaultProfileData.bloodType);
 
@@ -110,7 +109,7 @@ export default function HealthSummaryQrPage() {
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: calculatedAge,
+      age: undefined, // Initialize age as undefined
       sex: mappedSex,
       bloodGroup: mappedBloodGroup,
       emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
@@ -121,21 +120,28 @@ export default function HealthSummaryQrPage() {
   });
 
   useEffect(() => {
-    const initialValues = form.getValues();
-    const validationResult = healthSummarySchema.safeParse(initialValues);
+    // This effect runs only on the client, after initial hydration
+    const clientCalculatedAge = calculateAge(defaultProfileData.dateOfBirth);
+    if (clientCalculatedAge !== undefined) {
+        form.setValue('age', clientCalculatedAge, { shouldValidate: true });
+    }
+
+    // Now that form values (including client-calculated age) are set, generate initial QR
+    const currentFormValues = form.getValues();
+    const validationResult = healthSummarySchema.safeParse(currentFormValues);
 
     if (validationResult.success) {
-      const jsonData = JSON.stringify(validationResult.data); // Use compact JSON
+      const jsonData = JSON.stringify(validationResult.data);
       setQrData(jsonData);
     } else {
       setQrData(null);
-      console.warn("Initial profile data for QR code is not valid:", validationResult.error.flatten().fieldErrors);
+      console.warn("Initial profile data for QR code (client-side hydration) is not valid:", validationResult.error.flatten().fieldErrors);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount to generate QR from defaults
+  }, []); // Empty dependency array ensures this runs once on mount (client-side)
 
   function onSubmit(data: HealthSummaryFormValues) {
-    const jsonData = JSON.stringify(data); // Use compact JSON
+    const jsonData = JSON.stringify(data);
     setQrData(jsonData);
     toast({
       title: "QR Code Generated",
@@ -217,7 +223,13 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Age</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 30" {...field} onChange={e => field.onChange(parseInt(e.target.value) || undefined)} />
+                        <Input 
+                            type="number" 
+                            placeholder="e.g., 30" 
+                            {...field} 
+                            value={field.value ?? ''} // Handle undefined value for controlled input
+                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,7 +292,7 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Emergency Contact 1: Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Jane Doe" {...field} />
+                        <Input placeholder="e.g., Jane Doe" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -293,7 +305,7 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Emergency Contact 1: Phone</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="e.g., (555) 987-6543" {...field} />
+                        <Input type="tel" placeholder="e.g., (555) 987-6543" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -306,7 +318,7 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Emergency Contact 2: Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., John Smith" {...field} />
+                        <Input placeholder="e.g., John Smith" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -319,7 +331,7 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Emergency Contact 2: Phone</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="e.g., (555) 111-2222" {...field} />
+                        <Input type="tel" placeholder="e.g., (555) 111-2222" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -374,5 +386,3 @@ export default function HealthSummaryQrPage() {
     </div>
   );
 }
-
-    
