@@ -39,14 +39,13 @@ const healthSummarySchema = z.object({
     required_error: "Blood group is required.",
   }),
   emergencyContact1Name: z.string().optional(),
-  emergencyContact1Phone: z.string().optional(), // Consider adding phone validation if needed
+  emergencyContact1Phone: z.string().optional(),
   emergencyContact2Name: z.string().optional(),
-  emergencyContact2Phone: z.string().optional(), // Consider adding phone validation if needed
+  emergencyContact2Phone: z.string().optional(),
 });
 
 type HealthSummaryFormValues = z.infer<typeof healthSummarySchema>;
 
-// Helper function to calculate age
 function calculateAge(dateOfBirth?: Date): number | undefined {
   if (!dateOfBirth) return undefined;
   const today = new Date();
@@ -58,7 +57,6 @@ function calculateAge(dateOfBirth?: Date): number | undefined {
   return age;
 }
 
-// Helper function to map profile gender to QR sex
 function mapProfileGenderToQrSex(gender?: string): "Male" | "Female" | "Other" | undefined {
   if (!gender) return undefined;
   switch (gender.toLowerCase()) {
@@ -69,7 +67,6 @@ function mapProfileGenderToQrSex(gender?: string): "Male" | "Female" | "Other" |
   }
 }
 
-// Helper function to map profile blood type to QR blood group
 function mapProfileBloodTypeToQrBloodGroup(bloodType?: string): "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "Unknown" | undefined {
   if (!bloodType) return undefined;
   switch (bloodType) {
@@ -86,7 +83,6 @@ function mapProfileBloodTypeToQrBloodGroup(bloodType?: string): "A+" | "A-" | "B
   }
 }
 
-// Simulated profile data (mirroring profile page defaults)
 const defaultProfileData = {
   firstName: "Kishan",
   middleName: "",
@@ -124,8 +120,22 @@ export default function HealthSummaryQrPage() {
     },
   });
 
+  useEffect(() => {
+    const initialValues = form.getValues();
+    const validationResult = healthSummarySchema.safeParse(initialValues);
+
+    if (validationResult.success) {
+      const jsonData = JSON.stringify(validationResult.data); // Use compact JSON
+      setQrData(jsonData);
+    } else {
+      setQrData(null);
+      console.warn("Initial profile data for QR code is not valid:", validationResult.error.flatten().fieldErrors);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount to generate QR from defaults
+
   function onSubmit(data: HealthSummaryFormValues) {
-    const jsonData = JSON.stringify(data, null, 2);
+    const jsonData = JSON.stringify(data); // Use compact JSON
     setQrData(jsonData);
     toast({
       title: "QR Code Generated",
@@ -347,6 +357,7 @@ export default function HealthSummaryQrPage() {
               <div className="text-center text-muted-foreground">
                 <QrCodeIcon className="h-16 w-16 mx-auto mb-2" />
                 <p>QR code will appear here after you generate it.</p>
+                <p className="text-xs mt-1">If data is valid, it should appear on load. Otherwise, complete the form and click "Generate".</p>
               </div>
             )}
           </CardContent>
@@ -363,3 +374,5 @@ export default function HealthSummaryQrPage() {
     </div>
   );
 }
+
+    
