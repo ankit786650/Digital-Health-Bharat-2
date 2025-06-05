@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Download, QrCode as QrCodeIcon, ShieldAlert, Info } from "lucide-react";
+import { Download, QrCode as QrCodeIcon, ShieldAlert, Info, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const healthSummarySchema = z.object({
@@ -98,6 +98,7 @@ const defaultProfileData = {
 
 export default function HealthSummaryQrPage() {
   const [qrData, setQrData] = useState<string | null>(null);
+  const [initialQrError, setInitialQrError] = useState<string | null>(null);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -109,7 +110,7 @@ export default function HealthSummaryQrPage() {
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: undefined, // Initialize age as undefined
+      age: undefined, 
       sex: mappedSex,
       bloodGroup: mappedBloodGroup,
       emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
@@ -120,29 +121,33 @@ export default function HealthSummaryQrPage() {
   });
 
   useEffect(() => {
-    // This effect runs only on the client, after initial hydration
     const clientCalculatedAge = calculateAge(defaultProfileData.dateOfBirth);
     if (clientCalculatedAge !== undefined) {
         form.setValue('age', clientCalculatedAge, { shouldValidate: true });
     }
 
-    // Now that form values (including client-calculated age) are set, generate initial QR
     const currentFormValues = form.getValues();
     const validationResult = healthSummarySchema.safeParse(currentFormValues);
 
     if (validationResult.success) {
       const jsonData = JSON.stringify(validationResult.data);
       setQrData(jsonData);
+      setInitialQrError(null); 
     } else {
       setQrData(null);
+      const errorMessages = Object.values(validationResult.error.flatten().fieldErrors)
+        .flat()
+        .filter(Boolean) as string[];
+      setInitialQrError(errorMessages.length > 0 ? `Could not auto-generate QR: ${errorMessages.join(', ')}` : "Could not auto-generate QR due to invalid pre-filled data. Please check the form.");
       console.warn("Initial profile data for QR code (client-side hydration) is not valid:", validationResult.error.flatten().fieldErrors);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this runs once on mount (client-side)
+  }, []); 
 
   function onSubmit(data: HealthSummaryFormValues) {
     const jsonData = JSON.stringify(data);
     setQrData(jsonData);
+    setInitialQrError(null); // Clear initial error on successful manual generation
     toast({
       title: "QR Code Generated",
       description: "Your health summary QR code is ready.",
@@ -227,7 +232,7 @@ export default function HealthSummaryQrPage() {
                             type="number" 
                             placeholder="e.g., 30" 
                             {...field} 
-                            value={field.value ?? ''} // Handle undefined value for controlled input
+                            value={field.value ?? ''} 
                             onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
                         />
                       </FormControl>
@@ -354,6 +359,15 @@ export default function HealthSummaryQrPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center min-h-[200px]">
+            {initialQrError && !qrData && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>QR Generation Failed</AlertTitle>
+                <AlertDescription>
+                  {initialQrError}
+                </AlertDescription>
+              </Alert>
+            )}
             {qrData ? (
               <div ref={qrCanvasRef} className="p-4 bg-white rounded-md shadow-md inline-block">
                 <QRCodeCanvas
@@ -369,7 +383,7 @@ export default function HealthSummaryQrPage() {
               <div className="text-center text-muted-foreground">
                 <QrCodeIcon className="h-16 w-16 mx-auto mb-2" />
                 <p>QR code will appear here after you generate it.</p>
-                <p className="text-xs mt-1">If data is valid, it should appear on load. Otherwise, complete the form and click "Generate".</p>
+                {!initialQrError && <p className="text-xs mt-1">If data is valid, it should appear on load. Otherwise, complete the form and click "Generate".</p>}
               </div>
             )}
           </CardContent>
@@ -386,3 +400,4 @@ export default function HealthSummaryQrPage() {
     </div>
   );
 }
+
