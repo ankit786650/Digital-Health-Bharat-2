@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -42,23 +42,78 @@ const healthSummarySchema = z.object({
 
 type HealthSummaryFormValues = z.infer<typeof healthSummarySchema>;
 
+// Helper function to calculate age
+function calculateAge(dateOfBirth?: Date): number | undefined {
+  if (!dateOfBirth) return undefined;
+  const today = new Date();
+  let age = today.getFullYear() - dateOfBirth.getFullYear();
+  const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+// Helper function to map profile gender to QR sex
+function mapProfileGenderToQrSex(gender?: string): "Male" | "Female" | "Other" | undefined {
+  if (!gender) return undefined;
+  switch (gender.toLowerCase()) {
+    case "male": return "Male";
+    case "female": return "Female";
+    case "other": return "Other";
+    default: return undefined; // Handles "prefer_not_to_say" or other unmapped values
+  }
+}
+
+// Helper function to map profile blood type to QR blood group
+function mapProfileBloodTypeToQrBloodGroup(bloodType?: string): "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "Unknown" | undefined {
+  if (!bloodType) return undefined;
+  switch (bloodType) {
+    case "a_pos": return "A+";
+    case "a_neg": return "A-";
+    case "b_pos": return "B+";
+    case "b_neg": return "B-";
+    case "ab_pos": return "AB+";
+    case "ab_neg": return "AB-";
+    case "o_pos": return "O+";
+    case "o_neg": return "O-";
+    case "unknown": return "Unknown";
+    default: return undefined;
+  }
+}
+
+// Simulated profile data (mirroring profile page defaults)
+const defaultProfileData = {
+  firstName: "Kishan",
+  middleName: "",
+  lastName: "Davis",
+  dateOfBirth: new Date("1990-07-22"),
+  gender: "male",
+  bloodType: "o_pos",
+};
+
 export default function HealthSummaryQrPage() {
   const [qrData, setQrData] = useState<string | null>(null);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  const constructedFullName = `${defaultProfileData.firstName}${defaultProfileData.middleName ? ` ${defaultProfileData.middleName}` : ""} ${defaultProfileData.lastName}`;
+  const calculatedAge = calculateAge(defaultProfileData.dateOfBirth);
+  const mappedSex = mapProfileGenderToQrSex(defaultProfileData.gender);
+  const mappedBloodGroup = mapProfileBloodTypeToQrBloodGroup(defaultProfileData.bloodType);
+
   const form = useForm<HealthSummaryFormValues>({
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
-      fullName: "",
-      age: undefined,
-      sex: undefined,
-      bloodGroup: undefined,
+      fullName: constructedFullName || "",
+      age: calculatedAge, // Will be undefined if DOB missing, form validation will catch
+      sex: mappedSex,       // Will be undefined if unmappable, form validation will catch
+      bloodGroup: mappedBloodGroup, // Will be undefined if unmappable, form validation will catch
     },
   });
 
   function onSubmit(data: HealthSummaryFormValues) {
-    const jsonData = JSON.stringify(data, null, 2); // Pretty print for readability if scanned
+    const jsonData = JSON.stringify(data, null, 2);
     setQrData(jsonData);
     toast({
       title: "QR Code Generated",
@@ -112,9 +167,9 @@ export default function HealthSummaryQrPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Enter Your Health Information</CardTitle>
+            <CardTitle>Your Health Information</CardTitle>
             <CardDescription>
-              This information will be encoded into the QR code.
+              This information will be encoded into the QR code. Fields are pre-filled from your profile.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -140,7 +195,7 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Age</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 30" {...field} />
+                        <Input type="number" placeholder="e.g., 30" {...field} onChange={e => field.onChange(parseInt(e.target.value) || undefined)} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,7 +207,7 @@ export default function HealthSummaryQrPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sex</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select sex" />
@@ -174,7 +229,7 @@ export default function HealthSummaryQrPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Blood Group</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select blood group" />
@@ -220,7 +275,7 @@ export default function HealthSummaryQrPage() {
                   size={256}
                   bgColor={"#ffffff"}
                   fgColor={"#000000"}
-                  level={"L"} // Error correction level: L, M, Q, H
+                  level={"L"}
                   includeMargin={true}
                 />
               </div>
