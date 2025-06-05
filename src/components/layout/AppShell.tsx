@@ -16,7 +16,8 @@ import {
   User,
   LogOut,
   Settings, 
-  Activity, // Added Activity icon
+  Activity, 
+  QrCode, // Added QrCode icon
   type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -26,7 +27,7 @@ import React, { useState, useEffect } from "react";
 
 interface NavItemConfig {
   href: string;
-  labelKey: import('@/locales/translations').TranslationKey | 'monitor'; // Allow 'monitor' as a key
+  labelKey: import('@/locales/translations').TranslationKey | 'monitor' | 'healthQrCode'; 
   icon: LucideIcon;
 }
 
@@ -35,9 +36,10 @@ const navItemConfigs: NavItemConfig[] = [
   { href: '/visits', labelKey: 'appointments', icon: CalendarDays },
   { href: '/reminders', labelKey: 'medicationReminder', icon: Pill },
   { href: '/documents', labelKey: 'medicalDocuments', icon: FileText },
-  { href: '/monitoring', labelKey: 'monitor' as any, icon: Activity }, // New monitor page
+  { href: '/monitoring', labelKey: 'monitor' as any, icon: Activity }, 
   { href: '/analytics', labelKey: 'analytics', icon: BarChart3 },
   { href: '/nearby-facility', labelKey: 'nearbyFacility', icon: MapPin },
+  { href: '/health-summary-qr', labelKey: 'healthQrCode' as any, icon: QrCode }, // New Health QR Code page
   { href: '/profile', labelKey: 'profile', icon: User },
 ];
 
@@ -47,22 +49,21 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const { t, locale } = useLanguage(); // Added locale
+  const { t, locale } = useLanguage(); 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Helper to get label, fallback if key doesn't exist for current locale
   const getLabel = (labelKey: NavItemConfig['labelKey']) => {
     if (!mounted) {
-      // Convert to string for initial render if it's a known key
       if (labelKey === 'monitor') return 'Monitor';
+      if (labelKey === 'healthQrCode') return 'Health QR Code';
       return labelKey.toString().charAt(0).toUpperCase() + labelKey.toString().slice(1);
     }
-    if (labelKey === 'monitor') return 'Monitor'; // Directly return for 'monitor'
-    // Type assertion for other keys
+    if (labelKey === 'monitor') return 'Monitor'; 
+    if (labelKey === 'healthQrCode') return t('healthQrCode');
     return t(labelKey as import('@/locales/translations').TranslationKey);
   };
 
@@ -96,7 +97,7 @@ export function AppShell({ children }: AppShellProps) {
             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
             return (
               <Link
-                key={item.labelKey.toString()}
+                key={item.href} // Use href as key since labelKey can be dynamic now
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
@@ -126,10 +127,10 @@ export function AppShell({ children }: AppShellProps) {
                 {mounted ? t('settings') : 'Settings'}
               </Link>
           <Link
-            href="#" // Changed from /logout to # to prevent navigation
+            href="#" 
             className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 w-full",
-                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" // Adjusted hover for destructive
+                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
             )}
             onClick={(e) => { 
               e.preventDefault();
@@ -154,5 +155,3 @@ export function AppShell({ children }: AppShellProps) {
     </div>
   );
 }
-
-    

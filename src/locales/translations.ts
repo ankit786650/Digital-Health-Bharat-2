@@ -13,6 +13,7 @@ export const translations = {
     medicalDocuments: 'Medical Documents',
     analytics: 'Analytics',
     nearbyFacility: 'Nearby Facility',
+    healthQrCode: 'Health QR Code', // New
     profile: 'Profile',
     settings: 'Settings',
     logOut: 'Log Out',
@@ -42,6 +43,7 @@ export const translations = {
     medicalDocuments: 'चिकित्सा दस्तावेज़',
     analytics: 'विश्लेषिकी',
     nearbyFacility: 'आस-पास की सुविधा',
+    healthQrCode: 'स्वास्थ्य क्यूआर कोड', // New
     profile: 'प्रोफ़ाइल',
     settings: 'समायोजन',
     logOut: 'लॉग आउट',
