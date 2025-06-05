@@ -15,19 +15,31 @@ import {
   MapPin,
   User,
   LogOut,
-  Settings, 
-  Activity, 
-  QrCode, // Added QrCode icon
+  Settings,
+  Activity,
+  QrCode,
   type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageToggle } from "@/components/language/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+  useSidebar, // Import useSidebar to access sidebar state if needed directly
+} from '@/components/ui/sidebar';
 
 interface NavItemConfig {
   href: string;
-  labelKey: import('@/locales/translations').TranslationKey | 'monitor' | 'healthQrCode'; 
+  labelKey: import('@/locales/translations').TranslationKey | 'monitor' | 'healthQrCode';
   icon: LucideIcon;
 }
 
@@ -36,10 +48,10 @@ const navItemConfigs: NavItemConfig[] = [
   { href: '/visits', labelKey: 'appointments', icon: CalendarDays },
   { href: '/reminders', labelKey: 'medicationReminder', icon: Pill },
   { href: '/documents', labelKey: 'medicalDocuments', icon: FileText },
-  { href: '/monitoring', labelKey: 'monitor' as any, icon: Activity }, 
+  { href: '/monitoring', labelKey: 'monitor' as any, icon: Activity },
   { href: '/analytics', labelKey: 'analytics', icon: BarChart3 },
   { href: '/nearby-facility', labelKey: 'nearbyFacility', icon: MapPin },
-  { href: '/health-summary-qr', labelKey: 'healthQrCode' as any, icon: QrCode }, // New Health QR Code page
+  { href: '/health-summary-qr', labelKey: 'healthQrCode' as any, icon: QrCode },
   { href: '/profile', labelKey: 'profile', icon: User },
 ];
 
@@ -47,10 +59,11 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps) {
+function AppShellContent({ children }: AppShellProps) {
   const pathname = usePathname();
-  const { t, locale } = useLanguage(); 
+  const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const { state: sidebarState } = useSidebar(); // Get sidebar state
 
   useEffect(() => {
     setMounted(true);
@@ -62,96 +75,105 @@ export function AppShell({ children }: AppShellProps) {
       if (labelKey === 'healthQrCode') return 'Health QR Code';
       return labelKey.toString().charAt(0).toUpperCase() + labelKey.toString().slice(1);
     }
-    if (labelKey === 'monitor') return 'Monitor'; 
+    if (labelKey === 'monitor') return 'Monitor';
     if (labelKey === 'healthQrCode') return t('healthQrCode');
     return t(labelKey as import('@/locales/translations').TranslationKey);
   };
 
+  const userName = mounted ? t('kishan', 'User') : 'User';
+  const userFallback = mounted ? t('kishan', 'K').charAt(0).toUpperCase() : 'U';
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="w-64 bg-card p-4 flex flex-col fixed h-full shadow-sm border-r">
-        <div className="flex items-center gap-3 mb-8 p-2">
-          <Avatar className="h-10 w-10">
-            {mounted ? (
-              <>
-                <AvatarImage src="https://placehold.co/40x40.png" alt={t('kishan')} data-ai-hint="man face" />
-                <AvatarFallback>{t('kishan', 'K').charAt(0).toUpperCase()}</AvatarFallback>
-              </>
-            ) : (
-              <>
-                <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="man face" />
-                <AvatarFallback>U</AvatarFallback>
-              </>
-            )}
-          </Avatar>
-          {mounted ? (
-            <span className="font-semibold text-lg text-foreground">{t('kishan', 'User')}</span>
-          ) : (
-            <span className="font-semibold text-lg text-foreground">User</span>
-          )}
-        </div>
+    <>
+      <Sidebar collapsible="icon" className="border-r shadow-sm bg-card">
+        <SidebarHeader className="p-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="https://placehold.co/40x40.png" alt={userName} data-ai-hint="man face" />
+              <AvatarFallback>{userFallback}</AvatarFallback>
+            </Avatar>
+            {/* The span containing the name is managed by ui/sidebar for visibility */}
+            <span className="font-semibold text-lg text-foreground">
+              {userName}
+            </span>
+          </div>
+        </SidebarHeader>
 
-        <nav className="flex-grow space-y-1">
-          {navItemConfigs.map((item) => {
-            const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href} // Use href as key since labelKey can be dynamic now
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                )}
+        <SidebarContent>
+          <SidebarMenu>
+            {navItemConfigs.map((item) => {
+              const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+              const itemLabel = getLabel(item.labelKey);
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={itemLabel}
+                    className="w-full justify-start"
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{itemLabel}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarContent>
+
+        <SidebarFooter className="p-2 border-t">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith('/settings')}
+                tooltip={mounted ? t('settings') : 'Settings'}
+                className="w-full justify-start"
               >
-                <item.icon className={cn("h-5 w-5", isActive ? "text-accent-foreground" : "text-muted-foreground")} />
-                {getLabel(item.labelKey)}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-4 border-t border-border space-y-1">
-             <Link
-                href="/settings"
-                className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
-                    pathname.startsWith('/settings')
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                )}
+                <Link href="/settings">
+                  <Settings />
+                  <span>{mounted ? t('settings') : 'Settings'}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip={mounted ? t('logOut') : 'Log Out'}
+                className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive-foreground focus-visible:ring-destructive"
               >
-                <Settings className={cn("h-5 w-5", pathname.startsWith('/settings') ? "text-accent-foreground" : "text-muted-foreground")} />
-                {mounted ? t('settings') : 'Settings'}
-              </Link>
-          <Link
-            href="#" 
-            className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-1 w-full",
-                "text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
-            )}
-            onClick={(e) => { 
-              e.preventDefault();
-              alert("Logout action (to be implemented)");
-             }}
-          >
-            <LogOut className="h-5 w-5" />
-            {mounted ? t('logOut') : 'Log Out'}
-          </Link>
-        </div>
-      </aside>
+                <a href="#" onClick={(e) => { e.preventDefault(); alert("Logout action (to be implemented)"); }}>
+                  <LogOut />
+                  <span>{mounted ? t('logOut') : 'Log Out'}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
 
-      <div className="flex-1 ml-64 flex flex-col">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b bg-background px-6">
-            <LanguageToggle />
-            <ThemeToggle />
+      <div className="flex flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-2 border-b bg-background px-6">
+          <SidebarTrigger className="mr-auto" />
+          <LanguageToggle />
+          <ThemeToggle />
         </header>
-        <main className="flex-1 p-8 overflow-y-auto bg-background"> 
-            {children}
+        <main className="flex-1 p-8 overflow-y-auto bg-background">
+          {children}
         </main>
       </div>
-    </div>
+    </>
+  );
+}
+
+export function AppShell({ children }: AppShellProps) {
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen bg-background"> {/* This div is essential for SidebarProvider structure */}
+        <AppShellContent>{children}</AppShellContent>
+      </div>
+    </SidebarProvider>
   );
 }
