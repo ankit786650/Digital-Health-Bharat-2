@@ -25,9 +25,9 @@ export type ExtractMedicationDetailsInput = z.infer<typeof ExtractMedicationDeta
 const ExtractMedicationDetailsOutputSchema = z.object({
   medications: z.array(
     z.object({
-      name: z.string().describe('The name of the medication.'),
-      dosage: z.string().describe('The dosage of the medication (e.g., 10mg, 5ml).'),
-      timings: z.string().describe('The timings for taking the medication (e.g., once daily, twice daily, every 8 hours).'),
+      name: z.string().describe('The full name of the medication, including brand or generic name if available (e.g., "Lipitor", "Atorvastatin 20mg"). Strive for the most complete and accurate medication name found.'),
+      dosage: z.string().describe('The dosage of the medication (e.g., 10mg, 5ml, 1 tablet).'),
+      timings: z.string().describe('The timings for taking the medication (e.g., once daily, twice daily, every 8 hours, before meals).'),
     })
   ).describe('An array of medications extracted from the prescription.'),
 });
@@ -41,16 +41,16 @@ const prompt = ai.definePrompt({
   name: 'extractMedicationDetailsPrompt',
   input: {schema: ExtractMedicationDetailsInputSchema},
   output: {schema: ExtractMedicationDetailsOutputSchema},
-  prompt: `You are an AI assistant specialized in extracting medication details from prescription images.
+  prompt: `You are an AI assistant specialized in accurately extracting medication details from prescription images. Your primary goal is to identify each medication, its dosage, and its timings.
 
-  Analyze the provided prescription image and extract the following information for each medication:
-  - Name: The name of the medication.
-  - Dosage: The dosage of the medication (e.g., 10mg, 5ml).
-  - Timings: The timings for taking the medication (e.g., once daily, twice daily, every 8 hours).
+When analyzing the prescription image:
+1.  **Medication Name:** Focus meticulously on identifying the **full name of each medication**. This includes brand names (e.g., Lipitor) and generic names (e.g., Atorvastatin). Medication names are often clearly listed, sometimes followed by their strength or dosage form. Be careful to distinguish medication names from other text like clinic names, doctor's names, or general instructions.
+2.  **Dosage:** Extract the dosage of the medication (e.g., 10mg, 5ml, 1 tablet).
+3.  **Timings:** Determine the timings for taking the medication (e.g., once daily, twice daily, every 8 hours, before meals).
 
-  Return the extracted information in a structured JSON format as described in the output schema.
+Return the extracted information in a structured JSON format as described in the output schema.
 
-  Prescription Image: {{media url=prescriptionImage}}
+Prescription Image: {{media url=prescriptionImage}}
   `,
 });
 
