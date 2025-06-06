@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
-  useSidebar, 
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 interface NavItemConfig {
@@ -63,7 +63,7 @@ function AppShellContent({ children }: AppShellProps) {
   const pathname = usePathname();
   const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const { state: sidebarState } = useSidebar(); 
+  const { state: sidebarState } = useSidebar();
 
   useEffect(() => {
     setMounted(true);
@@ -153,7 +153,7 @@ function AppShellContent({ children }: AppShellProps) {
         </SidebarFooter>
       </Sidebar>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0"> {/* Added min-w-0 here */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b bg-background px-6">
           <SidebarTrigger />
           <div className="flex items-center gap-2">
