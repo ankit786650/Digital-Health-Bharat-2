@@ -42,9 +42,37 @@ const healthSummarySchema = z.object({
   emergencyContact1Phone: z.string().optional(),
   emergencyContact2Name: z.string().optional(),
   emergencyContact2Phone: z.string().optional(),
+  lastMedications: z.array(z.object({
+    name: z.string(),
+    date: z.string(),
+    time: z.string(),
+  })).optional(),
+  nextAppointment: z.object({
+    date: z.string(),
+    time: z.string(),
+    doctorName: z.string(),
+  }).optional(),
+  healthRecordUrl: z.string().url().optional(),
 });
 
 type HealthSummaryFormValues = z.infer<typeof healthSummarySchema>;
+
+// --- Mock Data for new fields ---
+const mockLastMedications = [
+  { name: "Lisinopril 20mg", date: "2024-07-28", time: "09:00 AM" },
+  { name: "Atorvastatin 40mg", date: "2024-07-28", time: "09:00 AM" },
+  { name: "Metformin 500mg", date: "2024-07-27", time: "08:00 PM" },
+];
+
+const mockNextAppointment = {
+  date: "2024-08-15",
+  time: "10:30 AM",
+  doctorName: "Dr. Emily Carter",
+};
+
+const mockHealthRecordUrl = "https://health.example.com/record/user123-xyz";
+// --- End Mock Data ---
+
 
 function calculateAge(dateOfBirth?: Date): number | undefined {
   if (!dateOfBirth) return undefined;
@@ -110,13 +138,16 @@ export default function HealthSummaryQrPage() {
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: undefined, 
+      age: undefined,
       sex: mappedSex,
       bloodGroup: mappedBloodGroup,
       emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
       emergencyContact1Phone: defaultProfileData.emergencyContact1Phone || "",
       emergencyContact2Name: defaultProfileData.emergencyContact2Name || "",
       emergencyContact2Phone: defaultProfileData.emergencyContact2Phone || "",
+      lastMedications: mockLastMedications,
+      nextAppointment: mockNextAppointment,
+      healthRecordUrl: mockHealthRecordUrl,
     },
   });
 
@@ -126,28 +157,32 @@ export default function HealthSummaryQrPage() {
         form.setValue('age', clientCalculatedAge, { shouldValidate: true });
     }
 
+    // Now that age is set (or attempted), get all values and generate QR
     const currentFormValues = form.getValues();
     const validationResult = healthSummarySchema.safeParse(currentFormValues);
 
     if (validationResult.success) {
-      const jsonData = JSON.stringify(validationResult.data);
+      const jsonData = JSON.stringify(validationResult.data); // Compact JSON
       setQrData(jsonData);
-      setInitialQrError(null); 
+      setInitialQrError(null);
     } else {
       setQrData(null);
       const errorMessages = Object.values(validationResult.error.flatten().fieldErrors)
         .flat()
         .filter(Boolean) as string[];
-      setInitialQrError(errorMessages.length > 0 ? `Could not auto-generate QR: ${errorMessages.join(', ')}` : "Could not auto-generate QR due to invalid pre-filled data. Please check the form.");
+      const detailedErrors = Object.entries(validationResult.error.flatten().fieldErrors)
+        .map(([key, msgs]) => `${key}: ${(msgs || []).join(', ')}`)
+        .join('; ');
+      setInitialQrError(errorMessages.length > 0 ? `Could not auto-generate QR: ${errorMessages.join(', ')}. Details: ${detailedErrors}` : "Could not auto-generate QR due to invalid pre-filled data. Please check the form.");
       console.warn("Initial profile data for QR code (client-side hydration) is not valid:", validationResult.error.flatten().fieldErrors);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []); // form is not added to deps to avoid re-running on every form change, only on mount for initial setup
 
   function onSubmit(data: HealthSummaryFormValues) {
-    const jsonData = JSON.stringify(data);
+    const jsonData = JSON.stringify(data); // Compact JSON
     setQrData(jsonData);
-    setInitialQrError(null); // Clear initial error on successful manual generation
+    setInitialQrError(null); 
     toast({
       title: "QR Code Generated",
       description: "Your health summary QR code is ready.",
@@ -203,6 +238,7 @@ export default function HealthSummaryQrPage() {
             <CardTitle>Your Health Information</CardTitle>
             <CardDescription>
               This information will be encoded into the QR code. Fields are pre-filled from your profile.
+              Additional health data (medications, appointments, record URL) is also included.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -228,11 +264,11 @@ export default function HealthSummaryQrPage() {
                     <FormItem>
                       <FormLabel>Age</FormLabel>
                       <FormControl>
-                        <Input 
-                            type="number" 
-                            placeholder="e.g., 30" 
-                            {...field} 
-                            value={field.value ?? ''} 
+                        <Input
+                            type="number"
+                            placeholder="e.g., 30"
+                            {...field}
+                            value={field.value ?? ''}
                             onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
                         />
                       </FormControl>
@@ -375,7 +411,7 @@ export default function HealthSummaryQrPage() {
                   size={256}
                   bgColor={"#ffffff"}
                   fgColor={"#000000"}
-                  level={"L"}
+                  level={"L"} // Level L is more resilient for larger data
                   includeMargin={true}
                 />
               </div>
