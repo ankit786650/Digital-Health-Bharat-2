@@ -138,7 +138,7 @@ export default function HealthSummaryQrPage() {
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: undefined,
+      age: undefined, // Age will be set in useEffect
       sex: mappedSex,
       bloodGroup: mappedBloodGroup,
       emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
@@ -268,7 +268,7 @@ export default function HealthSummaryQrPage() {
                             type="number"
                             placeholder="e.g., 30"
                             {...field}
-                            value={field.value ?? ''}
+                            value={field.value ?? ''} // Ensure value is not undefined for input
                             onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
                         />
                       </FormControl>
@@ -405,16 +405,21 @@ export default function HealthSummaryQrPage() {
               </Alert>
             )}
             {qrData ? (
-              <div ref={qrCanvasRef} className="p-4 bg-white rounded-md shadow-md inline-block">
-                <QRCodeCanvas
-                  value={qrData}
-                  size={256}
-                  bgColor={"#ffffff"}
-                  fgColor={"#000000"}
-                  level={"L"} // Level L is more resilient for larger data
-                  includeMargin={true}
-                />
-              </div>
+              <>
+                <div ref={qrCanvasRef} className="p-4 bg-white rounded-md shadow-md inline-block">
+                  <QRCodeCanvas
+                    value={qrData}
+                    size={256}
+                    bgColor={"#ffffff"}
+                    fgColor={"#000000"}
+                    level={"M"} // Changed level to "M" for Medium error correction
+                    includeMargin={true}
+                  />
+                </div>
+                <div className="mt-2 text-xs text-muted-foreground text-center">
+                  <p>Data Length: {qrData.length} characters</p>
+                </div>
+              </>
             ) : (
               <div className="text-center text-muted-foreground">
                 <QrCodeIcon className="h-16 w-16 mx-auto mb-2" />
