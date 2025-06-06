@@ -153,7 +153,7 @@ function AppShellContent({ children }: AppShellProps) {
         </SidebarFooter>
       </Sidebar>
 
-      <div className="flex flex-1 flex-col min-w-0"> {/* Added min-w-0 here */}
+      <div className="flex flex-1 flex-col min-w-0">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b bg-background px-6">
           <SidebarTrigger />
           <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ function AppShellContent({ children }: AppShellProps) {
 export function AppShell({ children }: AppShellProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen bg-background w-full">
         <AppShellContent>{children}</AppShellContent>
       </div>
     </SidebarProvider>
