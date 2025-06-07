@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,8 +26,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Download, QrCode as QrCodeIcon, ShieldAlert, Info, AlertCircle, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { jsPDF } from 'jspdf';
-import MapComponent from '@/components/MapComponent';
+import dynamic from 'next/dynamic';
+
+const DynamicMapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false });
+const DynamicQRCodeCanvas = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeCanvas), { ssr: false });
 
 const healthSummarySchema = z.object({
   fullName: z.string().min(1, "Full name is required."),
@@ -168,15 +169,17 @@ export default function HealthSummaryQrPage() {
   const [selectedLocation, setSelectedLocation] = useState<{latitude: number; longitude: number} | null>(initialLocationDefaults);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrDataFromUrl = urlParams.get('data');
-    
-    if (qrDataFromUrl) {
-      try {
-        const parsedData = JSON.parse(decodeURIComponent(qrDataFromUrl));
-        setScannedData(parsedData);
-      } catch (error) {
-        console.error('Error parsing QR data from URL:', error);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrDataFromUrl = urlParams.get('data');
+      
+      if (qrDataFromUrl) {
+        try {
+          const parsedData = JSON.parse(decodeURIComponent(qrDataFromUrl));
+          setScannedData(parsedData);
+        } catch (error) {
+          console.error('Error parsing QR data from URL:', error);
+        }
       }
     }
   }, [setScannedData]);
@@ -192,7 +195,8 @@ export default function HealthSummaryQrPage() {
     });
   }
 
-  const handlePdfDownload = (data: HealthSummaryFormValues) => {
+  const handlePdfDownload = async (data: HealthSummaryFormValues) => {
+    const { jsPDF } = await import('jspdf');
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.getWidth();
 
@@ -294,7 +298,7 @@ export default function HealthSummaryQrPage() {
             {scannedData.location && (
               <div>
                 <h3 className="font-semibold mb-2">Location</h3>
-                <MapComponent 
+                <DynamicMapComponent 
                   latitude={scannedData.location.latitude}
                   longitude={scannedData.location.longitude}
                   zoom={12}
@@ -466,7 +470,7 @@ export default function HealthSummaryQrPage() {
                   <CardDescription>Add your location for emergency services</CardDescription> 
                 </CardHeader> 
                 <CardContent className="space-y-4 px-0 pb-0"> 
-                  <MapComponent 
+                  <DynamicMapComponent 
                     latitude={selectedLocation?.latitude || 12.9716} 
                     longitude={selectedLocation?.longitude || 77.5946}
                     zoom={12}
@@ -556,7 +560,7 @@ export default function HealthSummaryQrPage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-4">
             <div ref={qrCanvasRef} className="p-4 bg-white rounded-lg shadow-lg">
-              <QRCodeCanvas
+              <DynamicQRCodeCanvas
                 value={qrData}
                 size={300}
                 level="L"

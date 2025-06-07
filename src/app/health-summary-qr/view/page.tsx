@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { jsPDF } from 'jspdf';
 import dynamic from 'next/dynamic';
 
 const DynamicMapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false });
@@ -69,7 +68,8 @@ export default function HealthSummaryView() {
     }
   }, [toast]);
 
-  const handlePdfDownload = (data: HealthSummaryFormValues) => {
+  const handlePdfDownload = async (data: HealthSummaryFormValues) => {
+    const { jsPDF } = await import('jspdf');
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.getWidth();
 
