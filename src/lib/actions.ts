@@ -31,19 +31,19 @@ export async function processPrescriptionImage(imageDataUrl: string): Promise<Pr
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" }); // Use gemini-pro-vision for image input
 
-    const parts = [
-      {
-        text: `Extract medication name, dosage, and frequency from this prescription image. Provide the output as a JSON array of objects, where each object has 'name', 'dosage', and 'timings' fields. For example: [{ "name": "MedicationName", "dosage": "Dosage", "timings": "Frequency" }]. If no medication details are found, return an empty JSON array []. Only return the JSON, no other text.`
-      },
-      {
-        inlineData: {
-          mimeType: imageDataUrl.substring(5, imageDataUrl.indexOf(';')), // Extract mime type from data URL
-          data: imageDataUrl.substring(imageDataUrl.indexOf(',') + 1) // Extract base64 data
+    const result = await model.generateContent({
+      contents: [
+        {
+          text: `Extract medication name, dosage, and frequency from this prescription image. Provide the output as a JSON array of objects, where each object has 'name', 'dosage', and 'timings' fields. For example: [{ "name": "MedicationName", "dosage": "Dosage", "timings": "Frequency" }]. If no medication details are found, return an empty JSON array []. Only return the JSON, no other text.`
+        },
+        {
+          inlineData: {
+            mimeType: imageDataUrl.substring(5, imageDataUrl.indexOf(';')), // Extract mime type from data URL
+            data: imageDataUrl.substring(imageDataUrl.indexOf(',') + 1) // Extract base64 data
+          }
         }
-      }
-    ];
-
-    const result = await model.generateContent({ contents: [parts[0], parts[1]] });
+      ]
+    });
     const response = await result.response;
     const text = response.text();
 
