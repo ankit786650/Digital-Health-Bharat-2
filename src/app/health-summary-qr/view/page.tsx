@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { jsPDF } from 'jspdf';
-import MapComponent from '@/components/MapComponent';
+import dynamic from 'next/dynamic';
+
+const DynamicMapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false });
 
 type HealthSummaryFormValues = {
   fullName: string;
@@ -204,7 +206,7 @@ export default function HealthSummaryView() {
           {healthData.location && (
             <div>
               <h3 className="font-semibold mb-2">Location</h3>
-              <MapComponent 
+              <DynamicMapComponent 
                 latitude={healthData.location.latitude}
                 longitude={healthData.location.longitude}
                 zoom={12}
