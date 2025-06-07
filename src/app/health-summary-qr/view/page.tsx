@@ -41,27 +41,29 @@ export default function HealthSummaryView() {
 
   useEffect(() => {
     // Get data from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const dataParam = urlParams.get('data');
-    
-    if (dataParam) {
-      try {
-        const decodedData = JSON.parse(decodeURIComponent(dataParam));
-        setHealthData(decodedData);
-      } catch (error) {
-        console.error('Error parsing health data:', error);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const dataParam = urlParams.get('data');
+      
+      if (dataParam) {
+        try {
+          const decodedData = JSON.parse(decodeURIComponent(dataParam));
+          setHealthData(decodedData);
+        } catch (error) {
+          console.error('Error parsing health data:', error);
+          toast({
+            title: "Error",
+            description: "Could not load health summary data.",
+            variant: "destructive",
+          });
+        }
+      } else {
         toast({
-          title: "Error",
-          description: "Could not load health summary data.",
+          title: "No Data",
+          description: "No health summary data found.",
           variant: "destructive",
         });
       }
-    } else {
-      toast({
-        title: "No Data",
-        description: "No health summary data found.",
-        variant: "destructive",
-      });
     }
   }, [toast]);
 

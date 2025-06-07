@@ -1,4 +1,3 @@
-
 export interface MedicationReminder {
   id: string;
   name: string;
@@ -42,19 +41,25 @@ export interface MedicalDocument {
   visitId?: string; // Optional link to a visit
 }
 
-export type FacilityType = 'Government Hospital' | 'PHC' | 'Private Hospital' | 'Jan Aushadhi Kendra' | 'Diagnostic Lab' | 'Pharmacy' | 'Clinic';
+export type FacilityType =
+  | "Government Hospital"
+  | "PHC"
+  | "Private Hospital"
+  | "Jan Aushadhi Kendra"
+  | "Diagnostic Lab"
+  | "Pharmacy"
+  | "Clinic";
 
 export interface Facility {
   id: string;
   name: string;
   type: FacilityType;
   address: string;
+  lat: number;
+  lng: number;
   phone?: string;
-  hours?: string;
-  distance: string; // e.g., "1.5 km"
-  lat: number; 
-  lng: number; 
-  services?: string[]; 
-  website?: string; 
-  imageUrl?: string; // Optional image for the facility
+  email?: string;
+  website?: string;
+  services?: string[];
+  distance?: number;
 }

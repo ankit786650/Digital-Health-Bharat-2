@@ -1,95 +1,99 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
-import L from 'leaflet';
+import dynamic from 'next/dynamic';
+import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default Leaflet icon issue with Webpack/CRA
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x.src,
-  iconUrl: markerIcon.src,
-  shadowUrl: markerShadow.src,
-});
-
-interface MapComponentProps {
-  latitude?: number;
-  longitude?: number;
-  zoom?: number;
-  onMarkerDragEnd?: (lat: number, lng: number) => void;
+interface Marker { 
+  lat: number; 
+  lng: number; 
+  name?: string; 
 }
 
-export default function MapComponent({
-  latitude = 20.5937, // Default to India's center
-  longitude = 78.9629,
-  zoom = 4,
-  onMarkerDragEnd
-}: MapComponentProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const markerInstance = useRef<L.Marker | null>(null);
+interface MapComponentProps {
+  latitude: number;
+  longitude: number;
+  zoom?: number;
+  markers?: Marker[];
+}
+
+// Dynamically import Leaflet with no SSR
+const MapComponent = ({ latitude, longitude, zoom = 13, markers = [] }: MapComponentProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    // Only run on client side
+    if (typeof window === 'undefined') return;
 
-    if (!mapInstance.current) {
-      // Initialize map if it doesn't exist
-      mapInstance.current = L.map(mapContainer.current).setView([latitude, longitude], zoom);
-
-      // Add OpenStreetMap tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(mapInstance.current);
-      console.log("Map initialized with center:", latitude, longitude);
-    }
-
-    // Update map view if center or zoom props change
-    if (mapInstance.current && (mapInstance.current.getCenter().lat !== latitude || mapInstance.current.getCenter().lng !== longitude || mapInstance.current.getZoom() !== zoom)) {
-      mapInstance.current.setView([latitude, longitude], zoom);
-      console.log("Map view updated to:", latitude, longitude, "zoom:", zoom);
-    }
-
-    // Add or update marker
-    if (latitude !== undefined && longitude !== undefined) {
-      if (markerInstance.current) {
-        markerInstance.current.setLatLng([latitude, longitude]);
-        console.log("Marker position updated to:", latitude, longitude);
-      } else if (mapInstance.current) {
-        markerInstance.current = L.marker([latitude, longitude], { draggable: !!onMarkerDragEnd }).addTo(mapInstance.current);
-        console.log("Marker added at:", latitude, longitude, "Draggable:", !!onMarkerDragEnd);
-
-        // Add dragend event listener if onMarkerDragEnd is provided
-        if (onMarkerDragEnd) {
-          markerInstance.current.on('dragend', (event) => {
-            const { lat, lng } = event.target.getLatLng();
-            onMarkerDragEnd(lat, lng);
-            console.log("Marker dragged to:", lat, lng);
-          });
-        }
+    const initMap = async () => {
+      // Fix for default Leaflet icon issue with Webpack/CRA
+      // It's better to explicitly set the default icon options directly.
+      if (L.Icon) {
+        L.Marker.prototype.options.icon = L.icon({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
       }
-    } else if (markerInstance.current) {
-      // Remove marker if coordinates are no longer provided
-      mapInstance.current?.removeLayer(markerInstance.current);
-      markerInstance.current = null;
-      console.log("Marker removed.");
-    }
 
-    // Cleanup on unmount
-    return () => {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-        console.log("Map instance removed on unmount.");
+      if (!mapInstanceRef.current && mapRef.current) {
+        mapInstanceRef.current = L.map(mapRef.current).setView([latitude, longitude], zoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mapInstanceRef.current as L.Map);
+      } else if (mapInstanceRef.current) {
+        // If map already exists, update view
+        mapInstanceRef.current.setView([latitude, longitude], zoom);
+      }
+
+      // Clear existing markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+
+      // Add new markers
+      if (markers.length > 0 && mapInstanceRef.current) {
+        markers.forEach(marker => {
+          const newMarker = L.marker([marker.lat, marker.lng])
+            .addTo(mapInstanceRef.current as L.Map)
+            .bindPopup(marker.name || 'Location');
+          markersRef.current.push(newMarker);
+        });
+      } else if (latitude && longitude && mapInstanceRef.current) {
+        // Add single marker for current location if no specific markers provided
+        const marker = L.marker([latitude, longitude])
+          .addTo(mapInstanceRef.current as L.Map)
+          .bindPopup('Selected Location');
+        markersRef.current.push(marker);
       }
     };
-  }, [latitude, longitude, zoom, onMarkerDragEnd]);
+
+    initMap();
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [latitude, longitude, zoom, markers]);
 
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
-      <div id="map-container" ref={mapContainer} className="w-full h-full" />
-    </div>
+    <div 
+      ref={mapRef} 
+      style={{ height: '400px', width: '100%', borderRadius: '0.5rem' }}
+      className="border border-border"
+    />
   );
-} 
+};
+
+// Export as dynamic component with no SSR
+export default dynamic(() => Promise.resolve(MapComponent), {
+  ssr: false
+}); 

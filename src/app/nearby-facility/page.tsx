@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Search, LocateFixed, Info, Package, MapPin, X, Loader2, SlidersHorizontal, Map } from "lucide-react";
+import { Search, LocateFixed, Info, Package, MapPin, X, Loader2, SlidersHorizontal, Map, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,12 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useNearbyFacilities } from "@/hooks/useNearbyFacilities";
+import { useMapPin } from "@/hooks/useMapPin";
+import { useAutoNearbyLocation } from "@/hooks/useAutoNearbyLocation";
+import { mockFacilities } from "@/lib/mockFacilities"; // For initial state
 
-const MapComponent = dynamic(() => import("@/components/MapComponent"), { ssr: false });
+const DynamicMapComponent = dynamic(() => import("@/components/MapComponent"), { ssr: false });
 
 const allFacilityTypes: FacilityType[] = [
   "Government Hospital",
@@ -31,87 +35,6 @@ const allFacilityTypes: FacilityType[] = [
   "Clinic",
 ];
 
-const mockFacilities: Facility[] = [
-  {
-    id: "1",
-    name: "City General Hospital",
-    type: "Government Hospital",
-    address: "12 MG Road, Shivaji Nagar, Bangalore, Karnataka 560001",
-    phone: "(080) 1234-5678",
-    hours: "Mon-Fri 9 AM - 5 PM",
-    distance: "1.2 km",
-    lat: 12.9716,
-    lng: 77.5946,
-  },
-  {
-    id: "2",
-    name: "Community Health Clinic (PHC)",
-    type: "PHC",
-    address: "45 Kaggadasapura Main Road, CV Raman Nagar, Bangalore, Karnataka 560093",
-    phone: "(080) 9876-5432",
-    hours: "Mon-Sat 8 AM - 6 PM",
-    distance: "3.5 km",
-    lat: 12.9822,
-    lng: 77.6588,
-  },
-  {
-    id: "3",
-    name: "Wellness Private Hospital",
-    type: "Private Hospital",
-    address: "78 Indiranagar 100 Feet Road, Indiranagar, Bangalore, Karnataka 560038",
-    phone: "(080) 2345-6789",
-    hours: "Open 24 hours",
-    distance: "2.1 km",
-    lat: 12.9784,
-    lng: 77.6408,
-  },
-  {
-    id: "4",
-    name: "Jan Aushadhi Kendra - Jayanagar",
-    type: "Jan Aushadhi Kendra",
-    address: "101 Jayanagar 4th Block, Jayanagar, Bangalore, Karnataka 560011",
-    phone: "(080) 3456-7890",
-    hours: "Mon-Sat 10 AM - 6 PM",
-    distance: "0.8 km",
-    lat: 12.9293,
-    lng: 77.5824,
-  },
-  {
-    id: "5",
-    name: "QuickScan Diagnostic Lab",
-    type: "Diagnostic Lab",
-    address: "202 Koramangala 5th Block, Koramangala, Bangalore, Karnataka 560095",
-    phone: "(080) 4567-8901",
-    hours: "Mon-Sun 7 AM - 7 PM",
-    distance: "4.0 km",
-    lat: 12.9351,
-    lng: 77.6245,
-  },
-  {
-    id: "6",
-    name: "HealthFirst Pharmacy",
-    type: "Pharmacy",
-    address: "303 Malleswaram 8th Cross, Malleswaram, Bangalore, Karnataka 560003",
-    phone: "(080) 5678-9012",
-    hours: "Open 24 hours",
-    distance: "1.5 km",
-    lat: 13.0014,
-    lng: 77.5723,
-  },
-  {
-    id: "7",
-    name: "Dr. Sharma's Family Clinic",
-    type: "Clinic",
-    address: "55 Richmond Road, Richmond Town, Bangalore, Karnataka 560025",
-    phone: "(080) 6789-1234",
-    hours: "Mon, Wed, Fri 8AM - 4PM",
-    distance: "2.8 km",
-    lat: 12.9657,
-    lng: 77.5970,
-  },
-];
-
-
 export default function NearbyFacilityPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<FacilityType[]>([]);
@@ -119,13 +42,37 @@ export default function NearbyFacilityPage() {
   const [showMap, setShowMap] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const { toast } = useToast();
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number; } | null>(null);
-  const [mapZoom, setMapZoom] = useState<number>(4);
   const [openSelect, setOpenSelect] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [resolvedAddress, setResolvedAddress] = useState<string>("");
 
-  const reverseGeocode = async (lat: number, lng: number) => {
+  // Use the custom hooks
+  const {
+    facilities,
+    isLoading: facilitiesLoading,
+    searchAllHealthCenters,
+    setFacilities,
+  } = useNearbyFacilities();
+
+  const {
+    mapCenter,
+    setMapCenter,
+    pinnedLocation,
+    pinLocation,
+    clearPin,
+  } = useMapPin({ lat: 12.9716, lng: 77.5946 }); // Default to Bangalore
+
+  const [mapZoom, setMapZoom] = useState<number>(12);
+
+  const {
+    userLocation,
+    isLocating,
+    error: locationError,
+    askAndShowNearbyFacilities,
+    nearbyFacilities,
+  } = useAutoNearbyLocation(facilities);
+
+  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<string> => {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
       const data = await response.json();
@@ -141,7 +88,7 @@ export default function NearbyFacilityPage() {
       setResolvedAddress("Error fetching address");
       return "Error fetching address";
     }
-  };
+  }, [setResolvedAddress]);
 
   const handleMarkerDragEnd = useCallback(async (lat: number, lng: number) => {
     setMapCenter({ lat, lng });
@@ -151,13 +98,11 @@ export default function NearbyFacilityPage() {
       title: "Location Updated",
       description: `Map center updated to: ${lat.toFixed(4)}, ${lng.toFixed(4)} - ${address}`,
     });
-  }, [setMapCenter, setMapZoom, toast]);
+    pinLocation(lat, lng);
+  }, [setMapCenter, setMapZoom, reverseGeocode, toast, pinLocation]);
 
-  useEffect(() => {
-    handleUseCurrentLocation();
-  }, []);
-
-  const handleUseCurrentLocation = () => {
+  // Handler for current location
+  const handleUseCurrentLocation = useCallback(() => {
     setIsLoadingLocation(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -165,10 +110,8 @@ export default function NearbyFacilityPage() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
 
-          if (!mapCenter || mapCenter.lat !== lat || mapCenter.lng !== lng) {
-            setMapCenter({ lat, lng });
-            setMapZoom(14);
-          }
+          setMapCenter({ lat, lng });
+          setMapZoom(14);
 
           const address = await reverseGeocode(lat, lng);
           toast({
@@ -177,8 +120,9 @@ export default function NearbyFacilityPage() {
           });
           setSearchTerm(address); // Update search term with the full address
           setIsLoadingLocation(false);
+          pinLocation(lat, lng); // Pin location on GPS detection
         },
-        (error) => {
+        (error: GeolocationPositionError) => {
           toast({
             title: "Location Error",
             description: error.message || "Could not retrieve your location.",
@@ -200,13 +144,21 @@ export default function NearbyFacilityPage() {
       });
       setIsLoadingLocation(false);
     }
-  };
+  }, [setMapCenter, setMapZoom, reverseGeocode, toast, pinLocation, setIsLoadingLocation]);
 
-  const handleGeocodeSearch = async (query: string) => {
+  useEffect(() => {
+    // Initial load, ask for current location
+    handleUseCurrentLocation();
+  }, [handleUseCurrentLocation]); // Depend on handleUseCurrentLocation
+
+  // Handler for geocoding
+  const handleGeocodeSearch = useCallback(async (query: string) => {
     if (!query) return;
     setIsGeocoding(true);
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
       const data = await response.json();
 
       if (data && data.length > 0) {
@@ -216,12 +168,14 @@ export default function NearbyFacilityPage() {
 
         if (!isNaN(newLat) && !isNaN(newLng)) {
           setMapCenter({ lat: newLat, lng: newLng });
-          setMapZoom(12); // Zoom in on the geocoded location
+          setMapZoom(12);
           toast({
             title: "Location Found!",
             description: `Map updated to: ${display_name}`,
           });
-          setSearchTerm(display_name); // Update search term with the full address
+          setSearchTerm(display_name);
+          setResolvedAddress(display_name); // Update resolved address
+          pinLocation(newLat, newLng); // Pin location on geocoding
         } else {
           toast({
             title: "Search Error",
@@ -237,7 +191,6 @@ export default function NearbyFacilityPage() {
         });
       }
     } catch (error) {
-      console.error("Geocoding error:", error);
       toast({
         title: "Search Error",
         description: "Failed to fetch location. Please check your network or try again.",
@@ -246,9 +199,9 @@ export default function NearbyFacilityPage() {
     } finally {
       setIsGeocoding(false);
     }
-  };
+  }, [setMapCenter, setMapZoom, toast, setSearchTerm, setResolvedAddress, pinLocation, setIsGeocoding]);
 
-  const handleTypeChange = (type: FacilityType) => {
+  const handleTypeChange = useCallback((type: FacilityType) => {
     setSelectedTypes((prevTypes) => {
       const isSelected = prevTypes.includes(type);
       let newTypes;
@@ -259,60 +212,100 @@ export default function NearbyFacilityPage() {
       }
       return newTypes;
     });
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSelectedTypes([]);
     setSearchTerm("");
     setSelectedFacility(null);
-  };
+    setFacilities(mockFacilities);
+    clearPin(); // Clear the pinned location
+    setResolvedAddress(""); // Clear resolved address
+    setMapCenter({ lat: 12.9716, lng: 77.5946 }); // Reset map to default Bangalore
+    setMapZoom(12); // Reset map zoom
+  }, [setFacilities, clearPin, setResolvedAddress, setMapCenter, setMapZoom]);
 
-  const handleFacilitySelect = (facility: Facility) => {
+  const handleFacilitySelect = useCallback((facility: Facility) => {
     setSelectedFacility(facility);
     setMapCenter({ lat: facility.lat, lng: facility.lng });
     setMapZoom(15);
-  };
+    pinLocation(facility.lat, facility.lng);
+    reverseGeocode(facility.lat, facility.lng);
+  }, [setMapCenter, setMapZoom, pinLocation, reverseGeocode]);
 
   // Effect to parse search term for coordinates or trigger geocoding
   useEffect(() => {
     const coordMatch = searchTerm.match(/(?:Near\s*)?(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/i);
 
     if (coordMatch && coordMatch[1] && coordMatch[2]) {
-      // It's coordinates, so update map directly
       const lat = parseFloat(coordMatch[1]);
       const lng = parseFloat(coordMatch[2]);
       if (!isNaN(lat) && !isNaN(lng)) {
-        if (!mapCenter || mapCenter.lat !== lat || mapCenter.lng !== lng) {
-          setMapCenter({ lat, lng });
-          setMapZoom(12);
-        }
+        setMapCenter({ lat, lng });
+        setMapZoom(12);
+        pinLocation(lat, lng);
+        reverseGeocode(lat, lng);
       }
-    } else if (mapCenter && !searchTerm) {
-        setMapCenter(null);
-        setMapZoom(4);
+    } else if (!searchTerm && mapCenter) {
+      // Only reset if the map center is different from default
+      if (mapCenter.lat !== 12.9716 || mapCenter.lng !== 77.5946) {
+        clearPin();
+        setMapCenter({ lat: 12.9716, lng: 77.5946 }); // Reset to default Bangalore
+        setMapZoom(12);
+        setResolvedAddress("");
+      }
     }
-  }, [searchTerm, mapCenter, isGeocoding]); // mapCenter and isGeocoding are dependencies because we check their values
+  }, [searchTerm, pinLocation, reverseGeocode, clearPin, setMapCenter, setMapZoom, setResolvedAddress]);
 
+  // Initialize facilities with mock data
+  useEffect(() => {
+    setFacilities(mockFacilities);
+  }, [setFacilities]);
+
+  // Use userLocation for map if available
+  const mapLat = userLocation?.lat ?? mapCenter.lat;
+  const mapLng = userLocation?.lng ?? mapCenter.lng;
+  const mapMarker = pinnedLocation ?? userLocation;
+
+  // Filtered facilities based on type and search term
   const filteredFacilities = useMemo(() => {
-    return mockFacilities
-      .filter((facility) => {
+    return facilities
+      .filter((facility: Facility) => {
         const matchesSearchTerm =
           facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (facility.services && facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase())));
+          (facility.services && facility.services.some((service: string) => service.toLowerCase().includes(searchTerm.toLowerCase())));
         const matchesType = selectedTypes.length === 0 || selectedTypes.includes(facility.type);
         return matchesSearchTerm && matchesType;
       })
-      .sort((a, b) => {
-        // Sort by distance if coordinates are available
+      .sort((a: Facility, b: Facility) => {
         if (mapCenter) {
-          const distA = Math.sqrt(Math.pow(a.lat - mapCenter.lat, 2) + Math.pow(a.lng - mapCenter.lng, 2));
-          const distB = Math.sqrt(Math.pow(b.lat - mapCenter.lat, 2) + Math.pow(b.lng - mapCenter.lng, 2));
+          // Calculate distance from mapCenter for sorting
+          const getDistanceSquared = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+            return Math.pow(lat1 - lat2, 2) + Math.pow(lng1 - lng2, 2);
+          };
+          const distA = getDistanceSquared(a.lat, a.lng, mapCenter.lat, mapCenter.lng);
+          const distB = getDistanceSquared(b.lat, b.lng, mapCenter.lat, mapCenter.lng);
           return distA - distB;
         }
         return 0;
       });
-  }, [searchTerm, selectedTypes, mapCenter]);
+  }, [facilities, searchTerm, selectedTypes, mapCenter]);
+
+  // Show nearby facilities if user has triggered location
+  const listToShow = nearbyFacilities.length > 0 ? nearbyFacilities : filteredFacilities;
+
+  // Handler to pin location on map (on map click)
+  const handlePinLocationOnMap = useCallback(async (lat: number, lng: number) => {
+    pinLocation(lat, lng);
+    setMapCenter({ lat, lng });
+    setMapZoom(15);
+    const address = await reverseGeocode(lat, lng);
+    toast({
+      title: "Pinned Location",
+      description: `Pinned at: ${lat.toFixed(4)}, ${lng.toFixed(4)} - ${address}`,
+    });
+  }, [pinLocation, setMapCenter, setMapZoom, reverseGeocode, toast]);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
@@ -348,30 +341,53 @@ export default function NearbyFacilityPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     const coordMatch = searchTerm.match(/(?:Near\s*)?(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/i);
-                    if (!(coordMatch && coordMatch[1] && coordMatch[2])) {
+                    if (!(coordMatch && coordMatch[1] && coordMatch[2])) { // Only geocode if not coordinates
                       handleGeocodeSearch(searchTerm);
+                    } else { // If it's coordinates, set resolved address
+                      setResolvedAddress(`Coordinates: ${coordMatch[1]}, ${coordMatch[2]}`);
                     }
                   }
                 }}
                 className="pl-8 w-full"
               />
             </div>
+            <Button
+              onClick={searchAllHealthCenters}
+              className="bg-info text-info-foreground hover:bg-info/90"
+            >
+              {facilitiesLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              Show All Health Centers
+            </Button>
           </div>
-
-          {resolvedAddress && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {resolvedAddress && ( // Display resolved address here
+            <Alert variant="default" className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0" />
               <span>Resolved Location: <span className="font-semibold text-foreground">{resolvedAddress}</span></span>
-            </div>
+            </Alert>
           )}
-
+          {/* Button for "Show Facilities Near Me" */}
+          <section className="space-y-2">
+            <Button
+              onClick={() => askAndShowNearbyFacilities()}
+              className="w-full bg-green-600 hover:bg-green-700 text-white mt-6"
+              disabled={facilitiesLoading || isLocating}
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              {isLocating ? "Locating..." : "Show Facilities Near Me"}
+            </Button>
+            {locationError && <Alert variant="destructive"><AlertTitle>Location Error</AlertTitle><AlertDescription>{locationError}</AlertDescription></Alert>}
+          </section>
           <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
             <Info className="h-5 w-5 text-info" />
             <AlertTitle className="font-medium text-info-muted-foreground">Location Tips</AlertTitle>
             <AlertDescription className="text-info-muted-foreground/90">
-              Allow location access for better results, or enter coordinates, address or pincode manually. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more</a>
+              Allow location access for better results, or enter coordinates, address or pincode manually.
             </AlertDescription>
           </Alert>
         </section>
@@ -410,8 +426,8 @@ export default function NearbyFacilityPage() {
                       : "Select facility types"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent 
-                  className="w-[300px] p-0" 
+                <PopoverContent
+                  className="w-[300px] p-0"
                   align="start"
                   side="bottom"
                   sideOffset={4}
@@ -427,13 +443,13 @@ export default function NearbyFacilityPage() {
                               key={type}
                               onSelect={() => {
                                 handleTypeChange(type);
-                                setOpenSelect(true); // Keep the popover open for multi-selection
+                                setOpenSelect(true);
                               }}
                               className="cursor-pointer"
                             >
                               <div className="flex items-center space-x-2">
                                 <Checkbox
-                                  id={`type-${type.replace(/\s+/g, '-')}`}
+                                  id={`type-${type.replace(/\s+/g, "-")}`}
                                   checked={selectedTypes.includes(type)}
                                   className={cn(
                                     selectedTypes.includes(type)
@@ -442,7 +458,7 @@ export default function NearbyFacilityPage() {
                                   )}
                                 />
                                 <Label
-                                  htmlFor={`type-${type.replace(/\s+/g, '-')}`}
+                                  htmlFor={`type-${type.replace(/\s+/g, "-")}`}
                                   className="font-medium text-sm cursor-pointer select-none"
                                 >
                                   {type}
@@ -494,14 +510,14 @@ export default function NearbyFacilityPage() {
                 {showMap ? "Hide Map" : "Show Map"}
               </Button>
             </div>
-            
+
             {showMap && (
               <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg border bg-muted">
-                <MapComponent 
-                  latitude={mapCenter?.lat} 
-                  longitude={mapCenter?.lng} 
+                <DynamicMapComponent
+                  latitude={mapCenter.lat}
+                  longitude={mapCenter.lng}
                   zoom={mapZoom}
-                  onMarkerDragEnd={handleMarkerDragEnd}
+                  markers={pinnedLocation ? [{ lat: pinnedLocation.lat, lng: pinnedLocation.lng, name: resolvedAddress || "Pinned Location" }] : []}
                 />
               </div>
             )}
@@ -512,19 +528,13 @@ export default function NearbyFacilityPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">
-              {filteredFacilities.length} Facilities Found
+              {listToShow.length} Facilities Found
             </h2>
-            {mapCenter && (
-              <span className="text-sm text-muted-foreground">
-                <MapPin className="inline-block h-4 w-4 mr-1" />
-                Sorted by distance from your location
-              </span>
-            )}
           </div>
 
           <div className="space-y-4">
-            {filteredFacilities.length > 0 ? (
-              filteredFacilities.map((facility) => (
+            {listToShow.length > 0 ? (
+              listToShow.map((facility: Facility) => (
                 <div
                   key={facility.id}
                   className={cn(

@@ -459,7 +459,7 @@ export default function HealthSummaryQrPage() {
                 )}
               />
 
-              {/* Location Information Card - Ensure it's nested correctly inside the form */}
+              {/* Location Information Card */}
               <Card className="border-none shadow-none mt-6"> 
                 <CardHeader className="px-0 pt-0 pb-4"> 
                   <CardTitle>Location Information</CardTitle> 
@@ -467,8 +467,9 @@ export default function HealthSummaryQrPage() {
                 </CardHeader> 
                 <CardContent className="space-y-4 px-0 pb-0"> 
                   <MapComponent 
-                    latitude={selectedLocation?.latitude} 
-                    longitude={selectedLocation?.longitude}
+                    latitude={selectedLocation?.latitude || 12.9716} 
+                    longitude={selectedLocation?.longitude || 77.5946}
+                    zoom={12}
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -482,10 +483,13 @@ export default function HealthSummaryQrPage() {
                               type="number" 
                               step="any"
                               {...field}
+                              value={field.value || ''}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
-                                field.onChange(value);
-                                handleLatitudeChange(value);
+                                if (!isNaN(value)) {
+                                  field.onChange(value);
+                                  handleLatitudeChange(value);
+                                }
                               }}
                             />
                           </FormControl>
@@ -504,10 +508,13 @@ export default function HealthSummaryQrPage() {
                               type="number" 
                               step="any"
                               {...field}
+                              value={field.value || ''}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
-                                field.onChange(value);
-                                handleLongitudeChange(value);
+                                if (!isNaN(value)) {
+                                  field.onChange(value);
+                                  handleLongitudeChange(value);
+                                }
                               }}
                             />
                           </FormControl>
@@ -523,7 +530,7 @@ export default function HealthSummaryQrPage() {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your address" {...field} />
+                          <Input placeholder="Enter your address" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
