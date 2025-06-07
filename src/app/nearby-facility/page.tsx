@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { Facility, FacilityType } from "@/lib/types";
 import { FacilityCard } from "@/components/nearby-facility/FacilityCard";
 import { Button } from "@/components/ui/button";
@@ -123,6 +123,35 @@ export default function NearbyFacilityPage() {
   const [mapZoom, setMapZoom] = useState<number>(4);
   const [openSelect, setOpenSelect] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [resolvedAddress, setResolvedAddress] = useState<string>("");
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const data = await response.json();
+      if (data && data.display_name) {
+        setResolvedAddress(data.display_name);
+        return data.display_name;
+      } else {
+        setResolvedAddress("Address not found");
+        return "Address not found";
+      }
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      setResolvedAddress("Error fetching address");
+      return "Error fetching address";
+    }
+  };
+
+  const handleMarkerDragEnd = useCallback(async (lat: number, lng: number) => {
+    setMapCenter({ lat, lng });
+    setMapZoom(15); // Zoom in slightly on the new pin location
+    const address = await reverseGeocode(lat, lng);
+    toast({
+      title: "Location Updated",
+      description: `Map center updated to: ${lat.toFixed(4)}, ${lng.toFixed(4)} - ${address}`,
+    });
+  }, [setMapCenter, setMapZoom, toast]);
 
   useEffect(() => {
     handleUseCurrentLocation();
@@ -132,7 +161,7 @@ export default function NearbyFacilityPage() {
     setIsLoadingLocation(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
 
@@ -141,11 +170,12 @@ export default function NearbyFacilityPage() {
             setMapZoom(14);
           }
 
+          const address = await reverseGeocode(lat, lng);
           toast({
             title: "Location Found!",
-            description: "Map updated to your location.",
+            description: `Map updated to your location: ${address}`,
           });
-          setSearchTerm(`Near ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
+          setSearchTerm(address); // Update search term with the full address
           setIsLoadingLocation(false);
         },
         (error) => {
@@ -330,11 +360,18 @@ export default function NearbyFacilityPage() {
             </div>
           </div>
 
+          {resolvedAddress && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span>Resolved Location: <span className="font-semibold text-foreground">{resolvedAddress}</span></span>
+            </div>
+          )}
+
           <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
             <Info className="h-5 w-5 text-info" />
             <AlertTitle className="font-medium text-info-muted-foreground">Location Tips</AlertTitle>
             <AlertDescription className="text-info-muted-foreground/90">
-              Allow location access for better results, or enter coordinates manually. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more</a>
+              Allow location access for better results, or enter coordinates, address or pincode manually. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more</a>
             </AlertDescription>
           </Alert>
         </section>
@@ -464,6 +501,7 @@ export default function NearbyFacilityPage() {
                   latitude={mapCenter?.lat} 
                   longitude={mapCenter?.lng} 
                   zoom={mapZoom}
+                  onMarkerDragEnd={handleMarkerDragEnd}
                 />
               </div>
             )}
