@@ -47,7 +47,7 @@ const MapComponent = ({ latitude, longitude, zoom = 13, markers = [] }: MapCompo
         mapInstanceRef.current = L.map(mapRef.current).setView([latitude, longitude], zoom);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(mapInstanceRef.current);
+        }).addTo(mapInstanceRef.current!);
       } else if (mapInstanceRef.current) {
         // If map already exists, update view
         mapInstanceRef.current.setView([latitude, longitude], zoom);
@@ -61,14 +61,14 @@ const MapComponent = ({ latitude, longitude, zoom = 13, markers = [] }: MapCompo
       if (markers.length > 0 && mapInstanceRef.current) {
         markers.forEach(marker => {
           const newMarker = L.marker([marker.lat, marker.lng])
-            .addTo(mapInstanceRef.current)
+            .addTo(mapInstanceRef.current!)
             .bindPopup(marker.name || 'Location');
           markersRef.current.push(newMarker);
         });
       } else if (latitude && longitude && mapInstanceRef.current) {
         // Add single marker for current location if no specific markers provided
         const marker = L.marker([latitude, longitude])
-          .addTo(mapInstanceRef.current)
+          .addTo(mapInstanceRef.current!)
           .bindPopup('Selected Location');
         markersRef.current.push(marker);
       }
