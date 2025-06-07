@@ -33,7 +33,7 @@ export async function processPrescriptionImage(imageDataUrl: string): Promise<Pr
 
     const parts = [
       {
-        text: "Extract medication name, dosage, and frequency from this prescription image. Provide the output as a JSON array of objects, where each object has 'name', 'dosage', and 'timings' fields. For example: [{ "name": "MedicationName", "dosage": "Dosage", "timings": "Frequency" }]. If no medication details are found, return an empty JSON array []. Only return the JSON, no other text."
+        text: `Extract medication name, dosage, and frequency from this prescription image. Provide the output as a JSON array of objects, where each object has 'name', 'dosage', and 'timings' fields. For example: [{ "name": "MedicationName", "dosage": "Dosage", "timings": "Frequency" }]. If no medication details are found, return an empty JSON array []. Only return the JSON, no other text.`
       },
       {
         inlineData: {
