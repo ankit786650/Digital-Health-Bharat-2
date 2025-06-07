@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -9,10 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { MapPinned, Search, LocateFixed, Info, Package, ExternalLink } from "lucide-react";
+import { Search, LocateFixed, Info, Package, MapPin, X, Loader2, SlidersHorizontal, Map } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import dynamic from 'next/dynamic';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
+const MapComponent = dynamic(() => import("@/components/MapComponent"), { ssr: false });
 
 const allFacilityTypes: FacilityType[] = [
   "Government Hospital",
@@ -108,20 +115,38 @@ const mockFacilities: Facility[] = [
 export default function NearbyFacilityPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<FacilityType[]>([]);
-  const [mapText, setMapText] = useState("Map View of Nearby Facilities");
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [showMap, setShowMap] = useState(true);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const { toast } = useToast();
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number; } | null>(null);
+  const [mapZoom, setMapZoom] = useState<number>(4);
+  const [openSelect, setOpenSelect] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  useEffect(() => {
+    handleUseCurrentLocation();
+  }, []);
 
   const handleUseCurrentLocation = () => {
+    setIsLoadingLocation(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          if (!mapCenter || mapCenter.lat !== lat || mapCenter.lng !== lng) {
+            setMapCenter({ lat, lng });
+            setMapZoom(14);
+          }
+
           toast({
             title: "Location Found!",
-            description: `Latitude: ${position.coords.latitude.toFixed(4)}, Longitude: ${position.coords.longitude.toFixed(4)}. Facility search based on this location is a future feature.`,
+            description: "Map updated to your location.",
           });
-          // In a real app, you'd use these coordinates to fetch facilities
-          // For now, we can clear the search term or set a placeholder
-          setSearchTerm(`Near ${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`);
+          setSearchTerm(`Near ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
+          setIsLoadingLocation(false);
         },
         (error) => {
           toast({
@@ -129,6 +154,12 @@ export default function NearbyFacilityPage() {
             description: error.message || "Could not retrieve your location.",
             variant: "destructive",
           });
+          setIsLoadingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000, // 10 seconds
+          maximumAge: 60000, // 1 minute
         }
       );
     } else {
@@ -137,147 +168,350 @@ export default function NearbyFacilityPage() {
         description: "Your browser does not support geolocation.",
         variant: "destructive",
       });
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const handleGeocodeSearch = async (query: string) => {
+    if (!query) return;
+    setIsGeocoding(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon, display_name } = data[0];
+        const newLat = parseFloat(lat);
+        const newLng = parseFloat(lon);
+
+        if (!isNaN(newLat) && !isNaN(newLng)) {
+          setMapCenter({ lat: newLat, lng: newLng });
+          setMapZoom(12); // Zoom in on the geocoded location
+          toast({
+            title: "Location Found!",
+            description: `Map updated to: ${display_name}`,
+          });
+          setSearchTerm(display_name); // Update search term with the full address
+        } else {
+          toast({
+            title: "Search Error",
+            description: "Could not parse coordinates from the address/pincode.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Search Error",
+          description: "No results found for the given address/pincode.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      toast({
+        title: "Search Error",
+        description: "Failed to fetch location. Please check your network or try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeocoding(false);
     }
   };
 
   const handleTypeChange = (type: FacilityType) => {
-    setSelectedTypes((prevTypes) =>
-      prevTypes.includes(type)
-        ? prevTypes.filter((t) => t !== type)
-        : [...prevTypes, type]
-    );
+    setSelectedTypes((prevTypes) => {
+      const isSelected = prevTypes.includes(type);
+      let newTypes;
+      if (isSelected) {
+        newTypes = prevTypes.filter((t) => t !== type);
+      } else {
+        newTypes = [...prevTypes, type];
+      }
+      return newTypes;
+    });
   };
 
-  const filteredFacilities = useMemo(() => {
-    return mockFacilities.filter((facility) => {
-      const matchesSearchTerm =
-        facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (facility.services && facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase())));
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(facility.type);
-      return matchesSearchTerm && matchesType;
-    });
-  }, [searchTerm, selectedTypes]);
+  const clearFilters = () => {
+    setSelectedTypes([]);
+    setSearchTerm("");
+    setSelectedFacility(null);
+  };
 
+  const handleFacilitySelect = (facility: Facility) => {
+    setSelectedFacility(facility);
+    setMapCenter({ lat: facility.lat, lng: facility.lng });
+    setMapZoom(15);
+  };
+
+  // Effect to parse search term for coordinates or trigger geocoding
   useEffect(() => {
-    let newMapText = "Map View of Nearby Facilities";
-    if (filteredFacilities.length === 0 && (searchTerm || selectedTypes.length > 0)) {
-      newMapText = "No Matching Facilities to Display on Map";
-    } else if (searchTerm && selectedTypes.length > 0) {
-      newMapText = `Map for '${searchTerm}' (${selectedTypes.join(', ')})`;
-    } else if (searchTerm) {
-      newMapText = `Map for '${searchTerm}'`;
-    } else if (selectedTypes.length > 0) {
-      if (selectedTypes.length === 1) {
-        newMapText = `Map of ${selectedTypes[0]}s`;
-      } else {
-        newMapText = `Map of ${selectedTypes.join(' & ')}`;
-      }
-    }
-    setMapText(newMapText);
-  }, [filteredFacilities, searchTerm, selectedTypes]);
+    const coordMatch = searchTerm.match(/(?:Near\s*)?(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/i);
 
+    if (coordMatch && coordMatch[1] && coordMatch[2]) {
+      // It's coordinates, so update map directly
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        if (!mapCenter || mapCenter.lat !== lat || mapCenter.lng !== lng) {
+          setMapCenter({ lat, lng });
+          setMapZoom(12);
+        }
+      }
+    } else if (mapCenter && !searchTerm) {
+        setMapCenter(null);
+        setMapZoom(4);
+    }
+  }, [searchTerm, mapCenter, isGeocoding]); // mapCenter and isGeocoding are dependencies because we check their values
+
+  const filteredFacilities = useMemo(() => {
+    return mockFacilities
+      .filter((facility) => {
+        const matchesSearchTerm =
+          facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (facility.services && facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase())));
+        const matchesType = selectedTypes.length === 0 || selectedTypes.includes(facility.type);
+        return matchesSearchTerm && matchesType;
+      })
+      .sort((a, b) => {
+        // Sort by distance if coordinates are available
+        if (mapCenter) {
+          const distA = Math.sqrt(Math.pow(a.lat - mapCenter.lat, 2) + Math.pow(a.lng - mapCenter.lng, 2));
+          const distB = Math.sqrt(Math.pow(b.lat - mapCenter.lat, 2) + Math.pow(b.lng - mapCenter.lng, 2));
+          return distA - distB;
+        }
+        return 0;
+      });
+  }, [searchTerm, selectedTypes, mapCenter]);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
       <div className="flex flex-col gap-8">
-        {/* Content Column */}
-        <div className="space-y-6">
-          {/* Location Detection */}
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">Nearby Facility</h2>
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-4">
-              <Button onClick={handleUseCurrentLocation} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                <LocateFixed className="mr-2 h-4 w-4" /> Use My Current Location
-              </Button>
-              <span className="text-muted-foreground">or</span>
-              <div className="relative w-full sm:flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search by Name, Address or PIN Code"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-full"
-                />
-              </div>
-            </div>
-            <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
-              <Info className="h-5 w-5 text-info" />
-              <AlertTitle className="font-medium text-info-muted-foreground">Location Permissions</AlertTitle>
-              <AlertDescription className="text-info-muted-foreground/90">
-                We need your permission to access your location. If denied, you can manually enter your location or use a PIN code. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more.</a>
-              </AlertDescription>
-            </Alert>
-          </section>
+        {/* Header Section */}
+        <div className="flex flex-col gap-4">
+          <h1 className="text-3xl font-bold">Find Nearby Healthcare Facilities</h1>
+          <p className="text-muted-foreground">
+            Search for hospitals, clinics, pharmacies, and other healthcare facilities near you.
+          </p>
+        </div>
 
-          {/* Filter by Facility Type */}
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">Filter by Facility Type <span className="text-sm text-muted-foreground">(within 5km - mock range)</span></h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {allFacilityTypes.map((type) => (
-                <div key={type}
-                     className={cn(
-                        "flex items-center space-x-2 border border-border rounded-md p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
-                        selectedTypes.includes(type) && "bg-primary/10 border-primary text-primary ring-1 ring-primary"
-                     )}
-                     onClick={() => handleTypeChange(type)}
-                >
-                  <Checkbox
-                    id={`type-${type.replace(/\s+/g, '-')}`}
-                    checked={selectedTypes.includes(type)}
-                    onCheckedChange={() => handleTypeChange(type)} // This will be triggered by the div click too
-                    className={cn(selectedTypes.includes(type) ? "border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground")}
-                  />
-                  <Label htmlFor={`type-${type.replace(/\s+/g, '-')}`} className="font-medium text-sm cursor-pointer select-none">
-                    {type}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Map Section */}
-          <section className="my-6">
-            <h2 className="text-xl font-semibold text-foreground mb-3">Facility Map</h2>
-            <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg border bg-muted">
-              <Image
-                src={`https://placehold.co/800x400.png?text=${encodeURIComponent(mapText)}`}
-                alt={mapText}
-                width={800}
-                height={400}
-                className="object-cover w-full h-full"
-                data-ai-hint="map locations"
-                priority
-                key={mapText} // Force re-render if text changes for placeholder
+        {/* Search and Location Section */}
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Button 
+              onClick={handleUseCurrentLocation} 
+              className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
+              disabled={isLoadingLocation}
+            >
+              {isLoadingLocation ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LocateFixed className="mr-2 h-4 w-4" />
+              )}
+              {isLoadingLocation ? "Detecting Location..." : "Use My Location"}
+            </Button>
+            <div className="relative w-full sm:flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by name, address, pincode, or coordinates (e.g., Bangalore, 560001, 12.9716, 77.5946)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    const coordMatch = searchTerm.match(/(?:Near\s*)?(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/i);
+                    if (!(coordMatch && coordMatch[1] && coordMatch[2])) {
+                      handleGeocodeSearch(searchTerm);
+                    }
+                  }
+                }}
+                className="pl-8 w-full"
               />
             </div>
-          </section>
+          </div>
 
-          {/* Facility Listings */}
-          <section>
-             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">
-                    {filteredFacilities.length > 0 ? `Found ${filteredFacilities.length} Facilities` : "Facilities"}
-                </h2>
+          <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
+            <Info className="h-5 w-5 text-info" />
+            <AlertTitle className="font-medium text-info-muted-foreground">Location Tips</AlertTitle>
+            <AlertDescription className="text-info-muted-foreground/90">
+              Allow location access for better results, or enter coordinates manually. <a href="#" className="font-semibold hover:underline text-info-muted-foreground">Learn more</a>
+            </AlertDescription>
+          </Alert>
+        </section>
+
+        {/* Facility Types and Map Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Facility Types Section */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Facility Types</h2>
+              {(selectedTypes.length > 0 || searchTerm) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Clear Filters
+                </Button>
+              )}
             </div>
-            {filteredFacilities.length > 0 ? (
-              <div className="space-y-4">
-                {filteredFacilities.map((facility) => (
-                  <FacilityCard key={facility.id} facility={facility} />
-                ))}
+
+            <div className="space-y-4">
+              <Popover open={openSelect} onOpenChange={setOpenSelect}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openSelect}
+                    className="w-full justify-between"
+                  >
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    {selectedTypes.length > 0
+                      ? `${selectedTypes.length} types selected`
+                      : "Select facility types"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-[300px] p-0" 
+                  align="start"
+                  side="bottom"
+                  sideOffset={4}
+                >
+                  <Command>
+                    <CommandInput placeholder="Search facility types..." />
+                    <CommandList>
+                      <CommandEmpty>No types found.</CommandEmpty>
+                      <CommandGroup>
+                        <ScrollArea className="h-[200px]">
+                          {allFacilityTypes.map((type) => (
+                            <CommandItem
+                              key={type}
+                              onSelect={() => {
+                                handleTypeChange(type);
+                                setOpenSelect(true); // Keep the popover open for multi-selection
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`type-${type.replace(/\s+/g, '-')}`}
+                                  checked={selectedTypes.includes(type)}
+                                  className={cn(
+                                    selectedTypes.includes(type)
+                                      ? "border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                      : "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                  )}
+                                />
+                                <Label
+                                  htmlFor={`type-${type.replace(/\s+/g, '-')}`}
+                                  className="font-medium text-sm cursor-pointer select-none"
+                                >
+                                  {type}
+                                </Label>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </ScrollArea>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {selectedTypes.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedTypes.map((type) => (
+                    <Badge
+                      key={type}
+                      variant="secondary"
+                      className="flex items-center gap-1 pr-1"
+                    >
+                      {type}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0.5 ml-1 leading-none"
+                        onClick={() => handleTypeChange(type)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Map Section */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Facility Map</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowMap(!showMap)}
+                className="w-auto"
+              >
+                <Map className="mr-2 h-4 w-4" />
+                {showMap ? "Hide Map" : "Show Map"}
+              </Button>
+            </div>
+            
+            {showMap && (
+              <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg border bg-muted">
+                <MapComponent 
+                  latitude={mapCenter?.lat} 
+                  longitude={mapCenter?.lng} 
+                  zoom={mapZoom}
+                />
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Facilities List */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">
+              {filteredFacilities.length} Facilities Found
+            </h2>
+            {mapCenter && (
+              <span className="text-sm text-muted-foreground">
+                <MapPin className="inline-block h-4 w-4 mr-1" />
+                Sorted by distance from your location
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {filteredFacilities.length > 0 ? (
+              filteredFacilities.map((facility) => (
+                <div
+                  key={facility.id}
+                  className={cn(
+                    "transition-all duration-200",
+                    selectedFacility?.id === facility.id && "ring-2 ring-primary"
+                  )}
+                >
+                  <FacilityCard
+                    facility={facility}
+                    onSelect={() => handleFacilitySelect(facility)}
+                    isSelected={selectedFacility?.id === facility.id}
+                  />
+                </div>
+              ))
             ) : (
-              <div className="text-center py-10 border rounded-lg bg-card shadow-sm">
-                <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-semibold text-foreground">No Facilities Found</p>
-                <p className="text-muted-foreground mt-1">
+              <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg shadow-inner text-muted-foreground">
+                <Package className="h-12 w-12 mb-4" />
+                <p className="text-lg font-medium">No Facilities Found</p>
+                <p className="text-sm text-center">
                   Try adjusting your search term or filters.
                 </p>
               </div>
             )}
-          </section>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
   );

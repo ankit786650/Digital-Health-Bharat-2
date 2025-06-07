@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -26,8 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Download, QrCode as QrCodeIcon, ShieldAlert, Info, AlertCircle } from "lucide-react";
+import { Download, QrCode as QrCodeIcon, ShieldAlert, Info, AlertCircle, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { jsPDF } from 'jspdf';
+import MapComponent from '@/components/MapComponent';
 
 const healthSummarySchema = z.object({
   fullName: z.string().min(1, "Full name is required."),
@@ -53,6 +54,11 @@ const healthSummarySchema = z.object({
     doctorName: z.string(),
   }).optional(),
   healthRecordUrl: z.string().url().optional(),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+    address: z.string().optional(),
+  }).optional(),
 });
 
 type HealthSummaryFormValues = z.infer<typeof healthSummarySchema>;
@@ -126,19 +132,26 @@ const defaultProfileData = {
 
 export default function HealthSummaryQrPage() {
   const [qrData, setQrData] = useState<string | null>(null);
-  const [initialQrError, setInitialQrError] = useState<string | null>(null);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [scannedData, setScannedData] = useState<HealthSummaryFormValues | null>(null);
 
   const constructedFullName = `${defaultProfileData.firstName}${defaultProfileData.middleName ? ` ${defaultProfileData.middleName}` : ""} ${defaultProfileData.lastName}`;
   const mappedSex = mapProfileGenderToQrSex(defaultProfileData.gender);
   const mappedBloodGroup = mapProfileBloodTypeToQrBloodGroup(defaultProfileData.bloodType);
+  const clientCalculatedAge = calculateAge(defaultProfileData.dateOfBirth);
+
+  const initialLocationDefaults = {
+    latitude: 0,
+    longitude: 0,
+    address: "",
+  };
 
   const form = useForm<HealthSummaryFormValues>({
     resolver: zodResolver(healthSummarySchema),
     defaultValues: {
       fullName: constructedFullName || "",
-      age: undefined, // Age will be set in useEffect
+      age: clientCalculatedAge,
       sex: mappedSex,
       bloodGroup: mappedBloodGroup,
       emergencyContact1Name: defaultProfileData.emergencyContact1Name || "",
@@ -148,296 +161,426 @@ export default function HealthSummaryQrPage() {
       lastMedications: mockLastMedications,
       nextAppointment: mockNextAppointment,
       healthRecordUrl: mockHealthRecordUrl,
+      location: initialLocationDefaults,
     },
   });
 
+  const [selectedLocation, setSelectedLocation] = useState<{latitude: number; longitude: number} | null>(initialLocationDefaults);
+
   useEffect(() => {
-    const clientCalculatedAge = calculateAge(defaultProfileData.dateOfBirth);
-    if (clientCalculatedAge !== undefined) {
-        form.setValue('age', clientCalculatedAge, { shouldValidate: true });
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrDataFromUrl = urlParams.get('data');
+    
+    if (qrDataFromUrl) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(qrDataFromUrl));
+        setScannedData(parsedData);
+      } catch (error) {
+        console.error('Error parsing QR data from URL:', error);
+      }
     }
-
-    // Now that age is set (or attempted), get all values and generate QR
-    const currentFormValues = form.getValues();
-    const validationResult = healthSummarySchema.safeParse(currentFormValues);
-
-    if (validationResult.success) {
-      const jsonData = JSON.stringify(validationResult.data); // Compact JSON
-      setQrData(jsonData);
-      setInitialQrError(null);
-    } else {
-      setQrData(null);
-      const errorMessages = Object.values(validationResult.error.flatten().fieldErrors)
-        .flat()
-        .filter(Boolean) as string[];
-      const detailedErrors = Object.entries(validationResult.error.flatten().fieldErrors)
-        .map(([key, msgs]) => `${key}: ${(msgs || []).join(', ')}`)
-        .join('; ');
-      setInitialQrError(errorMessages.length > 0 ? `Could not auto-generate QR: ${errorMessages.join(', ')}. Details: ${detailedErrors}` : "Could not auto-generate QR due to invalid pre-filled data. Please check the form.");
-      console.warn("Initial profile data for QR code (client-side hydration) is not valid:", validationResult.error.flatten().fieldErrors);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // form is not added to deps to avoid re-running on every form change, only on mount for initial setup
+  }, [setScannedData]);
 
   function onSubmit(data: HealthSummaryFormValues) {
-    const jsonData = JSON.stringify(data); // Compact JSON
-    setQrData(jsonData);
-    setInitialQrError(null); 
+    const baseUrl = "http://192.168.1.4:3000"; // Replace with your computer's IP address
+    const encodedData = encodeURIComponent(JSON.stringify(data));
+    const qrUrl = `${baseUrl}/health-summary-qr/view?data=${encodedData}`;
+    setQrData(qrUrl);
     toast({
       title: "QR Code Generated",
-      description: "Your health summary QR code is ready.",
+      description: "Your health summary QR code is ready. When scanned, it will show your health information.",
     });
   }
 
-  const handleDownload = () => {
-    if (qrCanvasRef.current) {
-      const canvas = qrCanvasRef.current.querySelector("canvas");
-      if (canvas) {
-        const pngUrl = canvas
-          .toDataURL("image/png")
-          .replace("image/png", "image/octet-stream");
-        const downloadLink = document.createElement("a");
-        downloadLink.href = pngUrl;
-        downloadLink.download = "health-summary-qr.png";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        toast({
-          title: "QR Code Downloaded",
-          description: "health-summary-qr.png has been saved.",
-        });
-      } else {
-        toast({
-          title: "Download Failed",
-          description: "Could not find the QR code canvas element.",
-          variant: "destructive",
-        });
-      }
+  const handlePdfDownload = (data: HealthSummaryFormValues) => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    pdf.setFontSize(20);
+    pdf.text('Health Summary', pageWidth/2, 20, { align: 'center' });
+
+    pdf.setFontSize(12);
+    let yPos = 40;
+
+    pdf.text(`Full Name: ${data.fullName}`, 20, yPos);
+    yPos += 10;
+    if (data.age) {
+      pdf.text(`Age: ${data.age}`, 20, yPos);
+      yPos += 10;
     }
+    if (data.sex) {
+      pdf.text(`Sex: ${data.sex}`, 20, yPos);
+      yPos += 10;
+    }
+    if (data.bloodGroup) {
+      pdf.text(`Blood Group: ${data.bloodGroup}`, 20, yPos);
+      yPos += 10;
+    }
+
+    yPos += 5;
+    pdf.setFontSize(14);
+    pdf.text('Emergency Contacts', 20, yPos);
+    pdf.setFontSize(12);
+    yPos += 10;
+    if (data.emergencyContact1Name && data.emergencyContact1Phone) {
+      pdf.text(`1. ${data.emergencyContact1Name}: ${data.emergencyContact1Phone}`, 20, yPos);
+      yPos += 10;
+    }
+    if (data.emergencyContact2Name && data.emergencyContact2Phone) {
+      pdf.text(`2. ${data.emergencyContact2Name}: ${data.emergencyContact2Phone}`, 20, yPos);
+    }
+
+    pdf.save('health-summary.pdf');
+    toast({
+      title: "PDF Downloaded",
+      description: "Health summary has been saved as PDF.",
+    });
+  };
+
+  const handleLatitudeChange = (value: number) => {
+    form.setValue('location.latitude', value, { shouldValidate: true });
+    setSelectedLocation(prev => prev ? { ...prev, latitude: value } : { latitude: value, longitude: form.getValues().location?.longitude || 0 });
+  };
+
+  const handleLongitudeChange = (value: number) => {
+    form.setValue('location.longitude', value, { shouldValidate: true });
+    setSelectedLocation(prev => prev ? { ...prev, longitude: value } : { longitude: value, latitude: form.getValues().location?.latitude || 0 });
   };
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 space-y-8">
-      <div className="flex items-center gap-3 mb-6">
-        <QrCodeIcon className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold text-foreground">Health Summary QR Code</h1>
-      </div>
-
-      <Alert variant="default" className="bg-info-muted border-info text-info-muted-foreground">
-        <Info className="h-5 w-5 text-info" />
-        <AlertTitle className="font-medium text-info-muted-foreground">Important Note</AlertTitle>
-        <AlertDescription className="text-info-muted-foreground/90">
-          The information encoded in this QR code will be readable by anyone who scans it.
-          Please ensure you are comfortable sharing this data before generating and using the QR code.
-        </AlertDescription>
-      </Alert>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      {scannedData && (
         <Card>
           <CardHeader>
-            <CardTitle>Your Health Information</CardTitle>
-            <CardDescription>
-              This information will be encoded into the QR code. Fields are pre-filled from your profile.
-              Additional health data (medications, appointments, record URL) is also included.
-            </CardDescription>
+            <CardTitle>Scanned Health Summary</CardTitle>
+            <CardDescription>Health information from QR code</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="age"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Age</FormLabel>
-                      <FormControl>
-                        <Input
-                            type="number"
-                            placeholder="e.g., 30"
-                            {...field}
-                            value={field.value ?? ''} // Ensure value is not undefined for input
-                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="sex"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sex</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select sex" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="bloodGroup"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Blood Group</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select blood group" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="A+">A+</SelectItem>
-                          <SelectItem value="A-">A-</SelectItem>
-                          <SelectItem value="B+">B+</SelectItem>
-                          <SelectItem value="B-">B-</SelectItem>
-                          <SelectItem value="AB+">AB+</SelectItem>
-                          <SelectItem value="AB-">AB-</SelectItem>
-                          <SelectItem value="O+">O+</SelectItem>
-                          <SelectItem value="O-">O-</SelectItem>
-                          <SelectItem value="Unknown">Unknown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emergencyContact1Name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact 1: Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Jane Doe" {...field} value={field.value ?? ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emergencyContact1Phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact 1: Phone</FormLabel>
-                      <FormControl>
-                        <Input type="tel" placeholder="e.g., (555) 987-6543" {...field} value={field.value ?? ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emergencyContact2Name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact 2: Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., John Smith" {...field} value={field.value ?? ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emergencyContact2Phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact 2: Phone</FormLabel>
-                      <FormControl>
-                        <Input type="tel" placeholder="e.g., (555) 111-2222" {...field} value={field.value ?? ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <QrCodeIcon className="mr-2 h-4 w-4" />
-                  Generate QR Code
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card className="sticky top-24">
-          <CardHeader>
-            <CardTitle>Your QR Code</CardTitle>
-            <CardDescription>
-              Scan this code to view the health summary.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center min-h-[200px]">
-            {initialQrError && !qrData && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>QR Generation Failed</AlertTitle>
-                <AlertDescription>
-                  {initialQrError}
-                </AlertDescription>
-              </Alert>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold">Personal Information</h3>
+              <p>Full Name: {scannedData.fullName}</p>
+              {scannedData.age && <p>Age: {scannedData.age}</p>}
+              {scannedData.sex && <p>Sex: {scannedData.sex}</p>}
+              {scannedData.bloodGroup && <p>Blood Group: {scannedData.bloodGroup}</p>}
+            </div>
+            {(scannedData.emergencyContact1Name || scannedData.emergencyContact2Name) && (
+              <div>
+                <h3 className="font-semibold">Emergency Contacts</h3>
+                {scannedData.emergencyContact1Name && scannedData.emergencyContact1Phone && (
+                  <p>1. {scannedData.emergencyContact1Name}: {scannedData.emergencyContact1Phone}</p>
+                )}
+                {scannedData.emergencyContact2Name && scannedData.emergencyContact2Phone && (
+                  <p>2. {scannedData.emergencyContact2Name}: {scannedData.emergencyContact2Phone}</p>
+                )}
+              </div>
             )}
-            {qrData ? (
-              <>
-                <div ref={qrCanvasRef} className="p-4 bg-white rounded-md shadow-md inline-block">
-                  <QRCodeCanvas
-                    value={qrData}
-                    size={256}
-                    bgColor={"#ffffff"}
-                    fgColor={"#000000"}
-                    level={"M"} // Changed level to "M" for Medium error correction
-                    includeMargin={true}
-                  />
-                </div>
-                <div className="mt-2 text-xs text-muted-foreground text-center">
-                  <p>Data Length: {qrData.length} characters</p>
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-muted-foreground">
-                <QrCodeIcon className="h-16 w-16 mx-auto mb-2" />
-                <p>QR code will appear here after you generate it.</p>
-                {!initialQrError && <p className="text-xs mt-1">If data is valid, it should appear on load. Otherwise, complete the form and click "Generate".</p>}
+            {scannedData.lastMedications && scannedData.lastMedications.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Last Medications</h3>
+                {scannedData.lastMedications.map((med, index) => (
+                  <p key={index}>{med.name} - {med.date} {med.time}</p>
+                ))}
+              </div>
+            )}
+
+            {scannedData.nextAppointment && (
+              <div>
+                <h3 className="font-semibold mb-2">Next Appointment</h3>
+                <p>Date: {scannedData.nextAppointment.date}</p>
+                <p>Time: {scannedData.nextAppointment.time}</p>
+                <p>Doctor: {scannedData.nextAppointment.doctorName}</p>
+              </div>
+            )}
+            {scannedData.location && (
+              <div>
+                <h3 className="font-semibold mb-2">Location</h3>
+                <MapComponent 
+                  latitude={scannedData.location.latitude}
+                  longitude={scannedData.location.longitude}
+                  zoom={12}
+                />
+                {scannedData.location.address && (
+                  <p className="mt-2">Address: {scannedData.location.address}</p>
+                )}
               </div>
             )}
           </CardContent>
-          {qrData && (
-            <CardFooter>
-              <Button onClick={handleDownload} className="w-full" variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Download QR Code (PNG)
-              </Button>
-            </CardFooter>
-          )}
+          <CardFooter>
+            <Button onClick={() => handlePdfDownload(scannedData)} className="w-full" variant="outline">
+              <FileText className="mr-2 h-4 w-4" />
+              Download as PDF
+            </Button>
+          </CardFooter>
         </Card>
-      </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Generate Health Summary QR Code</CardTitle>
+          <CardDescription>
+            Fill in your health information to generate a QR code.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g., 30"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="sex"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sex</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select sex" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bloodGroup"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blood Group</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select blood group" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                        <SelectItem value="Unknown">Unknown</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emergencyContact1Name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact 1: Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Jane Doe" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emergencyContact1Phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact 1: Phone</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="e.g., (555) 987-6543" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emergencyContact2Name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact 2: Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., John Smith" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emergencyContact2Phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact 2: Phone</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="e.g., (555) 111-2222" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Location Information Card - Ensure it's nested correctly inside the form */}
+              <Card className="border-none shadow-none mt-6"> 
+                <CardHeader className="px-0 pt-0 pb-4"> 
+                  <CardTitle>Location Information</CardTitle> 
+                  <CardDescription>Add your location for emergency services</CardDescription> 
+                </CardHeader> 
+                <CardContent className="space-y-4 px-0 pb-0"> 
+                  <MapComponent 
+                    latitude={selectedLocation?.latitude} 
+                    longitude={selectedLocation?.longitude}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="location.latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Latitude</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="any"
+                              {...field}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                field.onChange(value);
+                                handleLatitudeChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="location.longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Longitude</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="any"
+                              {...field}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                field.onChange(value);
+                                handleLongitudeChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="location.address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your address" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <QrCodeIcon className="mr-2 h-4 w-4" />
+                Generate QR Code
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      {qrData && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Health Summary QR Code</CardTitle>
+            <CardDescription>Scan this QR code to view and download your health summary</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-4">
+            <div ref={qrCanvasRef} className="p-4 bg-white rounded-lg shadow-lg">
+              <QRCodeCanvas
+                value={qrData}
+                size={300}
+                level="L"
+                includeMargin={true}
+                bgColor="#FFFFFF"
+                fgColor="#000000"
+              />
+            </div>
+            <div className="text-sm text-muted-foreground text-center max-w-xs">
+              Scan this QR code with your phone's camera to view your health summary
+            </div>
+            <Button
+              onClick={() => {
+                if (qrCanvasRef.current) {
+                  const canvas = qrCanvasRef.current.querySelector('canvas');
+                  if (canvas) {
+                    const link = document.createElement('a');
+                    link.download = 'health-summary-qr.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                  }
+                }
+              }}
+              variant="outline"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download QR Code
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
