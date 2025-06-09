@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -9,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import type { MedicationReminder } from "@/lib/types";
 import { processPrescriptionImage, ProcessPrescriptionResult } from "@/lib/actions";
+import { extractMedicationDetailsFromImage } from "@/lib/gemini";
 import { UploadCloud, Loader2, X, ScanLine } from "lucide-react"; // Added ScanLine
 import Image from "next/image";
 
@@ -48,30 +48,31 @@ export function PrescriptionUploadForm({ onRemindersGenerated, onCancel }: Presc
       });
       return;
     }
-
     setIsLoading(true);
     try {
-      const result: ProcessPrescriptionResult = await processPrescriptionImage(filePreview);
-      if (result.success && result.medications && result.medications.length > 0) {
-        onRemindersGenerated(result.medications);
+      // Use Gemini API directly
+      const geminiResult = await extractMedicationDetailsFromImage(selectedFile);
+      if (geminiResult && geminiResult.length > 0) {
+        // Map Gemini result to MedicationReminder[]
+        const reminders = geminiResult.map((med: any, idx: number) => ({
+          id: `ai-gemini-${Date.now()}-${idx}`,
+          name: med.name || "Unknown",
+          dosage: med.dosage || "",
+          timings: med.frequency || med.timings || "",
+          isGenerated: true,
+        }));
+        onRemindersGenerated(reminders);
         toast({
           title: "Success!",
-          description: `${result.medications.length} medication reminder(s) extracted.`,
+          description: `${reminders.length} medication reminder(s) extracted.`,
         });
         setSelectedFile(null);
         setFilePreview(null);
-      } else if (result.success && result.medications && result.medications.length === 0) {
-         toast({
+      } else {
+        toast({
           title: "No medications found",
           description: "The AI could not find any medication details in the image.",
           variant: "default",
-        });
-      }
-      else {
-        toast({
-          title: "Extraction Failed",
-          description: result.error || "Could not extract medication details. Please try again or add manually.",
-          variant: "destructive",
         });
       }
     } catch (error) {
