@@ -1,8 +1,9 @@
 // Gemini 2.5 Flash API utility for extracting medication details from an image
 // Usage: await extractMedicationDetailsFromImage(file)
 
-const GEMINI_API_KEY = "AIzaSyC6TleUYdGDaEXTFjSW141LGDGztUAAuOQ";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY;
 
 /**
  * Converts a File/Blob to a base64 string

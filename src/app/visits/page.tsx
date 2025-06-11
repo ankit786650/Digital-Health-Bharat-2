@@ -32,10 +32,10 @@ export default function VisitsPage() {
       // Initialize with default data if no local storage data
       setVisits(initialVisits.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
-    setIsLoading(false);
+    setIsLoading(false);                                                                                                                                                                                                       
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {                                                                                                                                                                           
     if (!isLoading) {
       localStorage.setItem("meditrack_visits", JSON.stringify(visits));
     }
@@ -124,3 +124,4 @@ export default function VisitsPage() {
     </div>
   );
 }
+ 
