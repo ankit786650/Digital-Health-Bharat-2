@@ -19,6 +19,7 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [reminderOption, setReminderOption] = useState("");
   const [enableNotifications, setEnableNotifications] = useState(false);
+  const [patientName, setPatientName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,9 +54,11 @@ export function AddVisitForm({ onAddVisit, onCancel }: AddVisitFormProps) {
             <div className="relative">
               <input 
                 type="text" 
-                disabled 
-                placeholder="Not stored in Visit type" 
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                value={patientName}
+                onChange={e => setPatientName(e.target.value)}
+                required
+                placeholder="Enter patient name" 
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
               {/* <UserCircleIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" /> */}
             </div>
