@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { ReactNode } from 'react';
@@ -18,7 +17,9 @@ import {
   Settings,
   Activity,
   QrCode,
-  type LucideIcon
+  type LucideIcon,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageToggle } from "@/components/language/LanguageToggle";
@@ -36,6 +37,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { NotificationPopover } from "@/components/ui/NotificationPopover";
 
 interface NavItemConfig {
   href: string;
@@ -75,7 +77,7 @@ function AppShellContent({ children }: AppShellProps) {
       if (labelKey === 'healthQrCode') return 'Health QR Code';
       return labelKey.toString().charAt(0).toUpperCase() + labelKey.toString().slice(1);
     }
-    if (labelKey === 'monitor') return 'Monitor'; // Assuming 'Monitor' doesn't need translation or key exists.
+    if (labelKey === 'monitor') return 'Monitor';
     if (labelKey === 'healthQrCode') return t('healthQrCode');
     return t(labelKey as import('@/locales/translations').TranslationKey);
   };
@@ -83,22 +85,56 @@ function AppShellContent({ children }: AppShellProps) {
   const userName = mounted ? t('kishan', 'User') : 'User';
   const userFallback = mounted ? t('kishan', 'K').charAt(0).toUpperCase() : 'U';
 
+  // Sample notifications for demonstration
+  const [notifications] = useState([
+    {
+      id: "1",
+      message: "New appointment scheduled for tomorrow.",
+      read: false,
+      timestamp: "2025-06-12 09:00 AM"
+    },
+    {
+      id: "2",
+      message: "Lab results uploaded.",
+      read: true,
+      timestamp: "2025-06-11 04:30 PM"
+    },
+    {
+      id: "3",
+      message: "Prescription updated by Dr. Sharma.",
+      read: false,
+      timestamp: "2025-06-10 01:15 PM"
+    }
+  ]);
+
   return (
     <>
-      <Sidebar collapsible="icon" className="border-r shadow-sm bg-card">
-        <SidebarHeader className="p-4">
+      <Sidebar 
+        collapsible="icon" 
+        className="border-r bg-gradient-to-b from-card to-card/90 backdrop-blur-sm"
+      >
+        <SidebarHeader className="p-4 border-b">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="https://placehold.co/40x40.png" alt={userName} data-ai-hint="man face" />
-              <AvatarFallback>{userFallback}</AvatarFallback>
+            <Avatar className="h-9 w-9 border-2 border-primary/20">
+              <AvatarImage src="https://placehold.co/40x40.png" alt={userName} />
+              <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                {userFallback}
+              </AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-lg text-foreground">
-              {userName}
-            </span>
+            {!sidebarState.collapsed && (
+              <div className="flex flex-col">
+                <span className="font-medium text-foreground truncate max-w-[160px]">
+                  {userName}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {mounted ? t('premiumMember') : 'Premium Member'}
+                </span>
+              </div>
+            )}
           </div>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent className="mt-2">
           <SidebarMenu>
             {navItemConfigs.map((item) => {
               const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
@@ -109,11 +145,14 @@ function AppShellContent({ children }: AppShellProps) {
                     asChild
                     isActive={isActive}
                     tooltip={itemLabel}
-                    className="w-full justify-start"
+                    className="w-full justify-start group"
                   >
                     <Link href={item.href}>
-                      <item.icon />
+                      <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
                       <span>{itemLabel}</span>
+                      {isActive && (
+                        <div className="ml-auto h-1 w-1 rounded-full bg-primary" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -129,10 +168,10 @@ function AppShellContent({ children }: AppShellProps) {
                 asChild
                 isActive={pathname.startsWith('/settings')}
                 tooltip={mounted ? t('settings') : 'Settings'}
-                className="w-full justify-start"
+                className="w-full justify-start group"
               >
                 <Link href="/settings">
-                  <Settings />
+                  <Settings className="h-4 w-4 transition-transform group-hover:scale-110" />
                   <span>{mounted ? t('settings') : 'Settings'}</span>
                 </Link>
               </SidebarMenuButton>
@@ -141,10 +180,17 @@ function AppShellContent({ children }: AppShellProps) {
               <SidebarMenuButton
                 asChild
                 tooltip={mounted ? t('logOut') : 'Log Out'}
-                className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive-foreground focus-visible:ring-destructive"
+                className="w-full justify-start text-destructive hover:bg-destructive/5 hover:text-destructive-foreground group"
               >
-                <a href="#" onClick={(e) => { e.preventDefault(); alert("Logout action (to be implemented)"); }}>
-                  <LogOut />
+                <a 
+                  href="#" 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    alert("Logout action (to be implemented)"); 
+                  }}
+                  className="focus-visible:ring-0"
+                >
+                  <LogOut className="h-4 w-4 transition-transform group-hover:scale-110" />
                   <span>{mounted ? t('logOut') : 'Log Out'}</span>
                 </a>
               </SidebarMenuButton>
@@ -154,15 +200,36 @@ function AppShellContent({ children }: AppShellProps) {
       </Sidebar>
 
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b bg-background px-6">
-          <SidebarTrigger />
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-6">
+          <SidebarTrigger className="rounded-full p-1.5 hover:bg-accent">
+            {sidebarState.collapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </SidebarTrigger>
+          <div className="flex items-center gap-2 ml-auto">
+            <NotificationPopover notifications={notifications} />
+            <LanguageToggle variant="ghost" className="rounded-full" />
+            <ThemeToggle variant="ghost" className="rounded-full" />
+            <div className="h-8 w-px bg-border mx-1" />
+            <button className="flex items-center gap-2 rounded-full p-1.5 hover:bg-accent">
+              <span className="text-sm font-medium hidden sm:inline-flex">
+                {userName}
+              </span>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="https://placehold.co/32x32.png" alt={userName} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                  {userFallback}
+                </AvatarFallback>
+              </Avatar>
+            </button>
           </div>
         </header>
-        <main className="flex-1 p-8 overflow-y-auto bg-background">
-          {children}
+        <main className="flex-1 p-6 overflow-y-auto bg-background">
+          <div className="max-w-[1800px] mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </>
